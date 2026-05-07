@@ -1,4 +1,4 @@
-# Do zrobienia
+# To do
 
 1. no drag projectile motion ✅
 2. linear drag projectile motion
