@@ -15,3 +15,6 @@ DT = 0.01  # time step, s
 ANGLE_RAD = np.radians(ANGLE_DEG)
 VX0 = V0 * np.cos(ANGLE_RAD)
 VY0 = V0 * np.sin(ANGLE_RAD)
+
+MASS = 0.145  # kg
+LINEAR_DRAG_COEFFICIENT = 0.02  # kg / s
