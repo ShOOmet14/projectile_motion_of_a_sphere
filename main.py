@@ -104,4 +104,4 @@ if __name__ == "__main__":
     max_height_index_no_drag = np.argmax(y_no_drag)
     print(f"time for max height no drag: {time[max_height_index_no_drag]}")
 
-    plot_motion(x_no_drag, y_no_drag, x_linear, y_linear)
+    # plot_motion(x_no_drag, y_no_drag, x_linear, y_linear)
