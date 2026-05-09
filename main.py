@@ -12,6 +12,8 @@ from config.parameters import (
     MASS,
     LINEAR_DRAG_COEFFICIENT,
     T_MAX,
+    SURFACE_AREA,
+    QUADRATIC_DRAG_CONSTANT,
 )
 
 from physics.no_drag import calculate_position_no_drag, calculate_velocity_no_drag
@@ -21,7 +23,11 @@ from physics.linear_drag import (
     calculate_velocity_linear_drag,
 )
 
-from visualization.plots import plot_motion
+from physics.quadratic_drag import calculate_state_quadratic_drag
+from simulation.integrators import euler_step
+from simulation.solve import solve_projectile_motion
+
+# from visualization.plots import plot_motion
 from physics.interpolation import interpolate_ground_hit
 
 if __name__ == "__main__":
@@ -103,5 +109,19 @@ if __name__ == "__main__":
 
     max_height_index_no_drag = np.argmax(y_no_drag)
     print(f"time for max height no drag: {time[max_height_index_no_drag]}")
+
+    print(f"Surface are is: {SURFACE_AREA}")
+    print(f"quadratoc drag constant q = {QUADRATIC_DRAG_CONSTANT}")
+
+    state_beginning = (X0, Y0, VX0, VY0)
+    print(f"Initial state:\n{state_beginning}")
+
+    deriatives_state = calculate_state_quadratic_drag(state_beginning)
+    print(f"Initial derivatives:\n{deriatives_state}")
+
+    state_new = euler_step(state_beginning)
+    print(f"State after one Euler step:\n{state_new}")
+
+    solve_projectile_motion()
 
     # plot_motion(x_no_drag, y_no_drag, x_linear, y_linear)
