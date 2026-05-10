@@ -23,19 +23,3 @@ def calculate_velocity_no_drag(
     velocity_y = vy0 - g * time
 
     return (velocity_x, velocity_y)
-
-
-def calculate_flight_time_no_drag(vy0: float, g: float) -> float:
-    return 2 * vy0 / g
-
-
-def calculate_range_no_drag(vx0: float, total_time: float) -> float:
-    return vx0 * total_time
-
-
-def calculate_max_height_no_drag(y0: float, vy0: float, g: float) -> float:
-    return y0 + vy0 * vy0 / (2 * g)
-
-
-def calculate_time_to_max_height_no_drag(vy0: float, g: float) -> float:
-    return vy0 / g
