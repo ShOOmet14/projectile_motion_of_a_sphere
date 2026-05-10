@@ -24,7 +24,7 @@ from physics.linear_drag import (
 )
 
 from physics.quadratic_drag import calculate_state_quadratic_drag
-from simulation.integrators import euler_step
+from simulation.integrators import euler_step, runge_kutta_method
 from simulation.solve import solve_projectile_motion
 
 # from visualization.plots import plot_motion
@@ -123,5 +123,13 @@ if __name__ == "__main__":
     print(f"State after one Euler step:\n{state_new}")
 
     solve_projectile_motion()
+
+    initial_state = np.array([X0, Y0, VX0, VY0], dtype=np.float64)
+    new_state = runge_kutta_method(initial_state)
+
+    print("One step of Runge-Kutta method:")
+    print(f"initial state:\n{initial_state}")
+    print(f"state after one Euler step:\n{state_new}")
+    print(f"state after one runge-kutta step:\n{new_state}")
 
     # plot_motion(x_no_drag, y_no_drag, x_linear, y_linear)
