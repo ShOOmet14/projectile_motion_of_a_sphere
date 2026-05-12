@@ -64,6 +64,7 @@ def solve_projectile_motion_no_drag() -> tuple[
     npt.NDArray[np.float64],
     npt.NDArray[np.float64],
     npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
 ]:
     x, y = calculate_position_no_drag(time, X0, Y0, VX0, VY0)
     vx, vy = calculate_velocity_no_drag(time, VX0, VY0)
@@ -111,25 +112,31 @@ def solve_projectile_motion_no_drag() -> tuple[
     vy = np.append(vy[mask], vy_hit)
 
     print("No drag")
-    print(f"interpolated flight time = {t_hit}")
-    print(f"interpolated range = {x_hit}")
-    print(f"max height = {max(y)}")
+    print(f"interpolated flight time \u2248 {t_hit}")
+    print(f"interpolated range \u2248 {x_hit}")
+    print(f"max height \u2248 {max(y)}")
 
     speed = calculate_speed(vx, vy)
+
+    print(f"initial speed = {speed[0]}")
+    print(f"min speed \u2248 {min(speed)}")
+    print(f"final speed \u2248 {speed[-1]}")
+
     kinetic_energy = calculate_kinetic_energy(speed)
     potential_energy = calculate_potential_energy(y)
 
     mechanical_energy = calculate_mechanical_energy(kinetic_energy, potential_energy)
 
-    print(f"initial energy = {mechanical_energy[0]}")
-    print(f"max energy = {max(mechanical_energy)}")
-    print(f"min energy = {min(mechanical_energy)}")
-    print(f"final energy = {mechanical_energy[-1]}")
+    print(f"initial energy \u2248 {mechanical_energy[0]}")
+    print(f"max energy \u2248 {max(mechanical_energy)}")
+    print(f"min energy \u2248 {min(mechanical_energy)}")
+    print(f"final energy \u2248 {mechanical_energy[-1]}")
 
-    return x, y, time_no_drag, mechanical_energy
+    return x, y, time_no_drag, mechanical_energy, speed
 
 
 def solve_projectile_motion_linear_drag() -> tuple[
+    npt.NDArray[np.float64],
     npt.NDArray[np.float64],
     npt.NDArray[np.float64],
     npt.NDArray[np.float64],
@@ -183,25 +190,31 @@ def solve_projectile_motion_linear_drag() -> tuple[
     vy = np.append(vy[mask], vy_hit)
 
     print("Linear drag")
-    print(f"interpolated flight time = {t_hit}")
-    print(f"interpolated range = {x_hit}")
-    print(f"max height = {max(y)}")
+    print(f"interpolated flight time \u2248 {t_hit}")
+    print(f"interpolated range \u2248 {x_hit}")
+    print(f"max height \u2248 {max(y)}")
 
     speed = calculate_speed(vx, vy)
+
+    print(f"initial speed = {speed[0]}")
+    print(f"min speed \u2248 {min(speed)}")
+    print(f"final speed \u2248 {speed[-1]}")
+
     kinetic_energy = calculate_kinetic_energy(speed)
     potential_energy = calculate_potential_energy(y)
 
     mechanical_energy = calculate_mechanical_energy(kinetic_energy, potential_energy)
 
-    print(f"initial energy = {mechanical_energy[0]}")
-    print(f"max energy = {max(mechanical_energy)}")
-    print(f"min energy = {min(mechanical_energy)}")
-    print(f"final energy = {mechanical_energy[-1]}")
+    print(f"initial energy \u2248 {mechanical_energy[0]}")
+    print(f"max energy \u2248 {max(mechanical_energy)}")
+    print(f"min energy \u2248 {min(mechanical_energy)}")
+    print(f"final energy \u2248 {mechanical_energy[-1]}")
 
-    return x, y, time_linear, mechanical_energy
+    return x, y, time_linear, mechanical_energy, speed
 
 
 def solve_projectile_motion_quadratic_drag() -> tuple[
+    npt.NDArray[np.float64],
     npt.NDArray[np.float64],
     npt.NDArray[np.float64],
     npt.NDArray[np.float64],
@@ -272,19 +285,24 @@ def solve_projectile_motion_quadratic_drag() -> tuple[
     time_as_array = np.array(time_quadratic, dtype=np.float64)
 
     print("Quadratic drag - Runge-Kutta method")
-    print(f"flight time = {t_hit}")
-    print(f"range = {x_hit}")
-    print(f"max height = {max(y_as_array)}")
+    print(f"flight time \u2248 {t_hit}")
+    print(f"range \u2248 {x_hit}")
+    print(f"max height \u2248 {max(y_as_array)}")
 
     speed = calculate_speed(vx_as_array, vy_as_array)
+
+    print(f"initial speed = {speed[0]}")
+    print(f"min speed \u2248 {min(speed)}")
+    print(f"final speed \u2248 {speed[-1]}")
+
     kinetic_energy = calculate_kinetic_energy(speed)
     potential_energy = calculate_potential_energy(y_as_array)
 
     mechanical_energy = calculate_mechanical_energy(kinetic_energy, potential_energy)
 
-    print(f"initial energy = {mechanical_energy[0]}")
-    print(f"max energy = {max(mechanical_energy)}")
-    print(f"min energy = {min(mechanical_energy)}")
-    print(f"final energy = {mechanical_energy[-1]}")
+    print(f"initial energy \u2248 {mechanical_energy[0]}")
+    print(f"max energy \u2248 {max(mechanical_energy)}")
+    print(f"min energy \u2248 {min(mechanical_energy)}")
+    print(f"final energy \u2248 {mechanical_energy[-1]}")
 
-    return x_as_array, y_as_array, time_as_array, mechanical_energy
+    return x_as_array, y_as_array, time_as_array, mechanical_energy, speed
