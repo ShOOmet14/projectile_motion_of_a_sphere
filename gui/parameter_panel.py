@@ -59,8 +59,8 @@ class ParameterPanel(QWidget):
         self.air_density_input.setSuffix(" kg/m³")
 
         self.linear_drag_coefficient_input = QDoubleSpinBox()
-        self.linear_drag_coefficient_input.setRange(0.0, 10.0)
-        self.linear_drag_coefficient_input.setValue(0.1)
+        self.linear_drag_coefficient_input.setRange(0.0001, 10.0)
+        self.linear_drag_coefficient_input.setValue(0.02)
         self.linear_drag_coefficient_input.setSingleStep(0.01)
         self.linear_drag_coefficient_input.setDecimals(4)
 

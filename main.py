@@ -11,6 +11,7 @@ from simulation.solve import (
 
 from visualization.plots import plot_motion, plot_energy, plot_speed
 from visualization.animation import animate_projectile_motion
+from config.parameters import DEFAULT_PARAMETERS
 
 
 def result_to_dataframe(result: ProjectileResult) -> pd.DataFrame:
@@ -37,9 +38,11 @@ def save_result_to_csv(path: str | Path, result: ProjectileResult) -> None:
 
 
 if __name__ == "__main__":
-    no_drag = solve_projectile_motion_no_drag()
-    linear_drag = solve_projectile_motion_linear_drag()
-    quadratic_drag = solve_projectile_motion_quadratic_drag()
+    parameters = DEFAULT_PARAMETERS
+
+    no_drag = solve_projectile_motion_no_drag(parameters)
+    linear_drag = solve_projectile_motion_linear_drag(parameters)
+    quadratic_drag = solve_projectile_motion_quadratic_drag(parameters)
 
     results_directory = Path("results")
     plots_directory = results_directory / "plots"

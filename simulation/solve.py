@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 
-from config.parameters import X0, Y0, VX0, VY0, T_MAX, DT, MASS, G
+from config.parameters import DEFAULT_PARAMETERS, Parameters
 
 from physics.no_drag import calculate_position_no_drag, calculate_velocity_no_drag
 from physics.linear_drag import (
@@ -12,9 +12,6 @@ from physics.quadratic_drag import runge_kutta_method
 
 # Type constants:
 ProjectileResult = dict[str, npt.NDArray[np.float64]]
-
-
-time = np.arange(0, T_MAX, DT)
 
 
 def interpolate_value_at_ground(
@@ -39,18 +36,17 @@ def calculate_speed(
 
 def calculate_kinetic_energy(
     speed: npt.NDArray[np.float64],
+    mass: float,
 ) -> npt.NDArray[np.float64]:
-    kinetic_energy = 0.5 * MASS * speed * speed
-
-    return kinetic_energy
+    return 0.5 * mass * speed * speed
 
 
 def calculate_potential_energy(
     y: npt.NDArray[np.float64],
+    mass: float,
+    g: float,
 ) -> npt.NDArray[np.float64]:
-    potential_energy = MASS * G * y
-
-    return potential_energy
+    return mass * g * y
 
 
 def calculate_mechanical_energy(
@@ -62,9 +58,27 @@ def calculate_mechanical_energy(
     return mechanical_energy
 
 
-def solve_projectile_motion_no_drag() -> ProjectileResult:
-    x, y = calculate_position_no_drag(time, X0, Y0, VX0, VY0)
-    vx, vy = calculate_velocity_no_drag(time, VX0, VY0)
+def solve_projectile_motion_no_drag(
+    parameters: Parameters = DEFAULT_PARAMETERS,
+) -> ProjectileResult:
+
+    time = np.arange(0.0, parameters.t_max, parameters.dt, dtype=np.float64)
+
+    x, y = calculate_position_no_drag(
+        time,
+        parameters.x0,
+        parameters.y0,
+        parameters.vx0,
+        parameters.vy0,
+        parameters.g,
+    )
+
+    vx, vy = calculate_velocity_no_drag(
+        time,
+        parameters.vx0,
+        parameters.vy0,
+        parameters.g,
+    )
 
     negative_indices = np.where(y < 0)[0]
     if len(negative_indices) == 0:
@@ -119,8 +133,8 @@ def solve_projectile_motion_no_drag() -> ProjectileResult:
     print(f"min speed \u2248 {min(speed)}")
     print(f"final speed \u2248 {speed[-1]}")
 
-    kinetic_energy = calculate_kinetic_energy(speed)
-    potential_energy = calculate_potential_energy(y)
+    kinetic_energy = calculate_kinetic_energy(speed, parameters.mass)
+    potential_energy = calculate_potential_energy(y, parameters.mass, parameters.g)
 
     mechanical_energy = calculate_mechanical_energy(kinetic_energy, potential_energy)
 
@@ -142,9 +156,29 @@ def solve_projectile_motion_no_drag() -> ProjectileResult:
     }
 
 
-def solve_projectile_motion_linear_drag() -> ProjectileResult:
-    x, y = calculate_position_linear_drag(time, X0, Y0, VX0, VY0)
-    vx, vy = calculate_velocity_linear_drag(time, VX0, VY0)
+def solve_projectile_motion_linear_drag(
+    parameters: Parameters = DEFAULT_PARAMETERS,
+) -> ProjectileResult:
+
+    time = np.arange(0.0, parameters.t_max, parameters.dt, dtype=np.float64)
+
+    x, y = calculate_position_linear_drag(
+        time,
+        parameters.x0,
+        parameters.y0,
+        parameters.vx0,
+        parameters.vy0,
+        parameters.k,
+        parameters.g,
+    )
+
+    vx, vy = calculate_velocity_linear_drag(
+        time,
+        parameters.vx0,
+        parameters.vy0,
+        parameters.k,
+        parameters.g,
+    )
 
     negative_indices = np.where(y < 0)[0]
     if len(negative_indices) == 0:
@@ -201,8 +235,8 @@ def solve_projectile_motion_linear_drag() -> ProjectileResult:
     print(f"min speed \u2248 {min(speed)}")
     print(f"final speed \u2248 {speed[-1]}")
 
-    kinetic_energy = calculate_kinetic_energy(speed)
-    potential_energy = calculate_potential_energy(y)
+    kinetic_energy = calculate_kinetic_energy(speed, parameters.mass)
+    potential_energy = calculate_potential_energy(y, parameters.mass, parameters.g)
 
     mechanical_energy = calculate_mechanical_energy(kinetic_energy, potential_energy)
 
@@ -224,18 +258,26 @@ def solve_projectile_motion_linear_drag() -> ProjectileResult:
     }
 
 
-def solve_projectile_motion_quadratic_drag() -> ProjectileResult:
+def solve_projectile_motion_quadratic_drag(
+    parameters: Parameters = DEFAULT_PARAMETERS,
+) -> ProjectileResult:
+
     time_quadratic: list[float] = [0.0]
-    x: list[float] = [X0]
-    y: list[float] = [Y0]
-    vx: list[float] = [VX0]
-    vy: list[float] = [VY0]
+    x: list[float] = [parameters.x0]
+    y: list[float] = [parameters.y0]
+    vx: list[float] = [parameters.vx0]
+    vy: list[float] = [parameters.vy0]
 
     while True:
         current_state = np.array([x[-1], y[-1], vx[-1], vy[-1]], dtype=np.float64)
-        x_new, y_new, vx_new, vy_new = runge_kutta_method(current_state)
+        x_new, y_new, vx_new, vy_new = runge_kutta_method(
+            current_state,
+            parameters.dt,
+            parameters.q,
+            parameters.g,
+        )
 
-        time_quadratic.append(time_quadratic[-1] + DT)
+        time_quadratic.append(time_quadratic[-1] + parameters.dt)
         x.append(x_new)
         y.append(y_new)
         vx.append(vx_new)
@@ -244,7 +286,7 @@ def solve_projectile_motion_quadratic_drag() -> ProjectileResult:
         if y_new < 0:
             break
 
-        if time_quadratic[-1] >= T_MAX:
+        if time_quadratic[-1] >= parameters.t_max:
             raise ValueError(
                 "Quadratic-drag projectile did not hit the ground. Increase T_MAX."
             )
@@ -300,8 +342,10 @@ def solve_projectile_motion_quadratic_drag() -> ProjectileResult:
     print(f"min speed \u2248 {min(speed)}")
     print(f"final speed \u2248 {speed[-1]}")
 
-    kinetic_energy = calculate_kinetic_energy(speed)
-    potential_energy = calculate_potential_energy(y_as_array)
+    kinetic_energy = calculate_kinetic_energy(speed, parameters.mass)
+    potential_energy = calculate_potential_energy(
+        y_as_array, parameters.mass, parameters.g
+    )
 
     mechanical_energy = calculate_mechanical_energy(kinetic_energy, potential_energy)
 
