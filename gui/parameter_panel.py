@@ -71,6 +71,13 @@ class ParameterPanel(QWidget):
         self.dt_input.setDecimals(4)
         self.dt_input.setSuffix(" s")
 
+        self.t_max_input = QDoubleSpinBox()
+        self.t_max_input.setRange(1.0, 1000.0)
+        self.t_max_input.setValue(DEFAULT_PARAMETERS.t_max)
+        self.t_max_input.setSingleStep(1.0)
+        self.t_max_input.setDecimals(2)
+        self.t_max_input.setSuffix(" s")
+
         self.print_parameters_button = QPushButton("Print parameters")
 
         layout.addRow(QLabel("Initial speed:"), self.velocity_input)
@@ -84,6 +91,7 @@ class ParameterPanel(QWidget):
             self.linear_drag_coefficient_input,
         )
         layout.addRow(QLabel("Time step:"), self.dt_input)
+        layout.addRow(QLabel("Max time:"), self.t_max_input)
         layout.addRow(self.print_parameters_button)
 
         self.setLayout(layout)
@@ -98,5 +106,6 @@ class ParameterPanel(QWidget):
             rho=self.air_density_input.value(),
             linear_drag=self.linear_drag_coefficient_input.value(),
             dt=self.dt_input.value(),
-            g=9.80665,
+            t_max=self.t_max_input.value(),
+            g=DEFAULT_PARAMETERS.g,
         )

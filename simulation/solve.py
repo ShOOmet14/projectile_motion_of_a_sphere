@@ -82,7 +82,9 @@ def solve_projectile_motion_no_drag(
 
     negative_indices = np.where(y < 0)[0]
     if len(negative_indices) == 0:
-        raise ValueError("No-drag projectile did not hit the ground. Increase T_MAX.")
+        raise ValueError(
+            "No-drag projectile did not hit the ground. Increase parameters.t_max."
+        )
 
     first_negative_index = int(negative_indices[0])
 
@@ -183,7 +185,7 @@ def solve_projectile_motion_linear_drag(
     negative_indices = np.where(y < 0)[0]
     if len(negative_indices) == 0:
         raise ValueError(
-            "Linear-drag projectile did not hit the ground. Increase T_MAX."
+            "Linear-drag projectile did not hit the ground. Increase parameters.t_max."
         )
 
     first_negative_index = int(negative_indices[0])
@@ -288,7 +290,7 @@ def solve_projectile_motion_quadratic_drag(
 
         if time_quadratic[-1] >= parameters.t_max:
             raise ValueError(
-                "Quadratic-drag projectile did not hit the ground. Increase T_MAX."
+                "Quadratic-drag projectile did not hit the ground. Increase parameters.t_max."
             )
 
     x_hit = interpolate_value_at_ground(
