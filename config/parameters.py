@@ -1,6 +1,44 @@
-# File that contains all the constants required for this project
-# Contant = Some value + units in comments
+from dataclasses import dataclass
+from math import cos, pi, sin
 import numpy as np
+
+
+@dataclass(frozen=True)
+class Parameters:
+    v0: float
+    angle_deg: float
+    mass: float
+    radius: float
+    cd: float
+    rho: float
+    linear_drag: float
+    dt: float
+    g: float
+
+    @property
+    def angle_rad(self) -> float:
+        return self.angle_deg * pi / 180.0
+
+    @property
+    def vx0(self) -> float:
+        return self.v0 * cos(self.angle_rad)
+
+    @property
+    def vy0(self) -> float:
+        return self.v0 * sin(self.angle_rad)
+
+    @property
+    def area(self) -> float:
+        return pi * self.radius * self.radius
+
+    @property
+    def k(self) -> float:
+        return self.linear_drag / self.mass
+
+    @property
+    def q(self) -> float:
+        return self.rho * self.cd * self.area / (2.0 * self.mass)
+
 
 G = 9.80665  # m / s^2
 
