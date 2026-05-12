@@ -269,7 +269,7 @@ def solve_projectile_motion_quadratic_drag() -> tuple[
     y_as_array = np.array(y, dtype=np.float64)
     vx_as_array = np.array(vx, dtype=np.float64)
     vy_as_array = np.array(vy, dtype=np.float64)
-    time_as_array = np.array(time, dtype=np.float64)
+    time_as_array = np.array(time_quadratic, dtype=np.float64)
 
     print("Quadratic drag - Runge-Kutta method")
     print(f"flight time = {t_hit}")
