@@ -8,7 +8,7 @@ class Parameters:
     angle_deg: float = 45.0
 
     mass: float = 0.145
-    radius: float = 0.037
+    radius: float = 0.0366
 
     cd: float = 0.47
     rho: float = 1.225

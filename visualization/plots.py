@@ -7,9 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 
-def save_and_show_plot(figure: Figure, save_path: str | Path) -> None:
+def save_plot(figure: Figure, save_path: str | Path) -> None:
     figure.savefig(save_path, dpi=300, bbox_inches="tight")
-    # plt.show()
     plt.close(figure)
 
 
@@ -40,7 +39,7 @@ def plot_motion(
     axis.legend()
     axis.grid(True)
 
-    save_and_show_plot(figure, save_path)
+    save_plot(figure, save_path)
 
 
 def plot_speed(
@@ -82,7 +81,7 @@ def plot_speed(
     axis.legend()
     axis.grid(True)
 
-    save_and_show_plot(figure, save_path)
+    save_plot(figure, save_path)
 
 
 def plot_energy(
@@ -124,4 +123,4 @@ def plot_energy(
     axis.legend()
     axis.grid(True)
 
-    save_and_show_plot(figure, save_path)
+    save_plot(figure, save_path)
