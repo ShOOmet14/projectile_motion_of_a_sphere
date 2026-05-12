@@ -7,9 +7,11 @@
 5. calculations of flight time, range, maximum altitude and speed over time, kinetic energy, potential energy and mechanical energy ✅
 6. plotting for energy comparison, velocity comparison and position comparison over time ✅
 7. add export of results to CSV file ✅
-8. add export of images to results directory
-9. make animations for them flying
-10. add options for changing constatns
-11. add GUI maybe, if simple to make
+8. add export of images to results directory ✅
+9. make animations for them in motion ✅
+10. add GUI maybe, if simple to make
+11. add options for changing constatns inside like settings or constatns window
+12. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
+13. make good readme
 
 CSV contains interpolated point for ground hit.

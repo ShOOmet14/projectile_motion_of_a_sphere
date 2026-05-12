@@ -9,7 +9,7 @@ from matplotlib.figure import Figure
 
 def save_and_show_plot(figure: Figure, save_path: str | Path) -> None:
     figure.savefig(save_path, dpi=300, bbox_inches="tight")
-    plt.show()
+    # plt.show()
     plt.close(figure)
 
 

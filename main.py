@@ -10,6 +10,7 @@ from simulation.solve import (
 )
 
 from visualization.plots import plot_motion, plot_energy, plot_speed
+from visualization.animation import animate_projectile_motion
 
 
 def result_to_dataframe(result: ProjectileResult) -> pd.DataFrame:
@@ -42,9 +43,11 @@ if __name__ == "__main__":
 
     results_directory = Path("results")
     plots_directory = results_directory / "plots"
+    animations_directory = results_directory / "animations"
 
     results_directory.mkdir(exist_ok=True)
     plots_directory.mkdir(exist_ok=True)
+    animations_directory.mkdir(exist_ok=True)
 
     save_result_to_csv(results_directory / "no_drag.csv", no_drag)
     save_result_to_csv(results_directory / "linear_drag.csv", linear_drag)
@@ -78,4 +81,11 @@ if __name__ == "__main__":
         linear_drag["t"],
         quadratic_drag["t"],
         plots_directory / "speed_comparison.png",
+    )
+
+    animate_projectile_motion(
+        no_drag,
+        linear_drag,
+        quadratic_drag,
+        animations_directory / "projectile_motion.gif",
     )
