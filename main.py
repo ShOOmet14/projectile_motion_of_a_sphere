@@ -1,46 +1,65 @@
+from pathlib import Path
+
+import pandas as pd
+
 from simulation.solve import (
+    ProjectileResult,
     solve_projectile_motion_no_drag,
     solve_projectile_motion_linear_drag,
     solve_projectile_motion_quadratic_drag,
 )
 
-from visualization.plots import plot_speed
+# from visualization.plots import plot_motion, plot_energy
+
+
+def result_to_dataframe(result: ProjectileResult) -> pd.DataFrame:
+    dataframe = pd.DataFrame(
+        {
+            "t": result["t"],
+            "x": result["x"],
+            "y": result["y"],
+            "vx": result["vx"],
+            "vy": result["vy"],
+            "v": result["v"],
+            "Ek": result["Ek"],
+            "Ep": result["Ep"],
+            "E": result["E"],
+        }
+    )
+
+    return dataframe
+
+
+def save_result_to_csv(path: str, result: ProjectileResult) -> None:
+    dataframe = result_to_dataframe(result)
+    dataframe.to_csv(path, index=False)
+
 
 if __name__ == "__main__":
-    x_no_drag, y_no_drag, time_no_drag, mechanical_energy_no_drag, speed_no_drag = (
-        solve_projectile_motion_no_drag()
-    )
-    (
-        x_linear,
-        y_linear,
-        time_linear_drag,
-        mechanical_energy_linear_drag,
-        speed_linear_drag,
-    ) = solve_projectile_motion_linear_drag()
-    (
-        x_quadratic,
-        y_quadratic,
-        time_quadratic_drag,
-        mechanical_energy_quadratic_drag,
-        speed_quadratic_drag,
-    ) = solve_projectile_motion_quadratic_drag()
+    no_drag = solve_projectile_motion_no_drag()
+    linear_drag = solve_projectile_motion_linear_drag()
+    quadratic_drag = solve_projectile_motion_quadratic_drag()
 
-    # plot_motion(x_no_drag, y_no_drag, x_linear, y_linear, x_quadratic, y_quadratic)
+    Path("results").mkdir(exist_ok=True)
 
-    plot_speed(
-        speed_no_drag,
-        time_no_drag,
-        speed_linear_drag,
-        time_linear_drag,
-        speed_quadratic_drag,
-        time_quadratic_drag,
-    )
+    save_result_to_csv("results/no_drag.csv", no_drag)
+    save_result_to_csv("results/linear_drag.csv", linear_drag)
+    save_result_to_csv("results/quadratic_drag_rk4.csv", quadratic_drag)
+
+    # plot_motion(
+    #     no_drag["x"],
+    #     no_drag["y"],
+    #     linear_drag["x"],
+    #     linear_drag["y"],
+    #     quadratic_drag["x"],
+    #     quadratic_drag["y"],
+    # )
 
     # plot_energy(
-    #     mechanical_energy_no_drag,
-    #     time_no_drag,
-    #     mechanical_energy_linear_drag,
-    #     time_linear_drag,
-    #     mechanical_energy_quadratic_drag,
-    #     time_quadratic_drag,
+    #     no_drag["E"],
+    #     linear_drag["E"],
+    #     quadratic_drag["E"],
+    #     no_drag["t"],
+    #     linear_drag["t"],
+    #     quadratic_drag["t"],
     # )

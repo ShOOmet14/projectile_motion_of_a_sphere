@@ -10,6 +10,9 @@ from physics.linear_drag import (
 )
 from physics.quadratic_drag import runge_kutta_method
 
+# Type constants:
+ProjectileResult = dict[str, npt.NDArray[np.float64]]
+
 
 time = np.arange(0, T_MAX, DT)
 
@@ -59,13 +62,7 @@ def calculate_mechanical_energy(
     return mechanical_energy
 
 
-def solve_projectile_motion_no_drag() -> tuple[
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-]:
+def solve_projectile_motion_no_drag() -> ProjectileResult:
     x, y = calculate_position_no_drag(time, X0, Y0, VX0, VY0)
     vx, vy = calculate_velocity_no_drag(time, VX0, VY0)
 
@@ -132,16 +129,20 @@ def solve_projectile_motion_no_drag() -> tuple[
     print(f"min energy \u2248 {min(mechanical_energy)}")
     print(f"final energy \u2248 {mechanical_energy[-1]}")
 
-    return x, y, time_no_drag, mechanical_energy, speed
+    return {
+        "t": time_no_drag,
+        "x": x,
+        "y": y,
+        "vx": vx,
+        "vy": vy,
+        "v": speed,
+        "Ek": kinetic_energy,
+        "Ep": potential_energy,
+        "E": mechanical_energy,
+    }
 
 
-def solve_projectile_motion_linear_drag() -> tuple[
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-]:
+def solve_projectile_motion_linear_drag() -> ProjectileResult:
     x, y = calculate_position_linear_drag(time, X0, Y0, VX0, VY0)
     vx, vy = calculate_velocity_linear_drag(time, VX0, VY0)
 
@@ -210,16 +211,20 @@ def solve_projectile_motion_linear_drag() -> tuple[
     print(f"min energy \u2248 {min(mechanical_energy)}")
     print(f"final energy \u2248 {mechanical_energy[-1]}")
 
-    return x, y, time_linear, mechanical_energy, speed
+    return {
+        "t": time_linear,
+        "x": x,
+        "y": y,
+        "vx": vx,
+        "vy": vy,
+        "v": speed,
+        "Ek": kinetic_energy,
+        "Ep": potential_energy,
+        "E": mechanical_energy,
+    }
 
 
-def solve_projectile_motion_quadratic_drag() -> tuple[
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-]:
+def solve_projectile_motion_quadratic_drag() -> ProjectileResult:
     time_quadratic: list[float] = [0.0]
     x: list[float] = [X0]
     y: list[float] = [Y0]
@@ -305,4 +310,14 @@ def solve_projectile_motion_quadratic_drag() -> tuple[
     print(f"min energy \u2248 {min(mechanical_energy)}")
     print(f"final energy \u2248 {mechanical_energy[-1]}")
 
-    return x_as_array, y_as_array, time_as_array, mechanical_energy, speed
+    return {
+        "t": time_as_array,
+        "x": x_as_array,
+        "y": y_as_array,
+        "vx": vx_as_array,
+        "vy": vy_as_array,
+        "v": speed,
+        "Ek": kinetic_energy,
+        "Ep": potential_energy,
+        "E": mechanical_energy,
+    }
