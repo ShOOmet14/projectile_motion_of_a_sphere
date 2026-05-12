@@ -1,6 +1,16 @@
+from pathlib import Path
+
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
+
+from matplotlib.figure import Figure
+
+
+def save_and_show_plot(figure: Figure, save_path: str | Path) -> None:
+    figure.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.show()
+    plt.close(figure)
 
 
 def plot_motion(
@@ -10,35 +20,39 @@ def plot_motion(
     y_linear: npt.NDArray[np.float64],
     x_quadratic: npt.NDArray[np.float64],
     y_quadratic: npt.NDArray[np.float64],
+    save_path: str | Path,
 ) -> None:
-    _, axis = plt.subplots()
+    figure, axis = plt.subplots()
 
     axis.plot(x_no_drag, y_no_drag, label="No drag", color="red")
     axis.plot(x_linear, y_linear, label="Linear drag", color="blue")
     axis.plot(
-        x_quadratic, y_quadratic, label="Quadratic drag Runge-Kutta", color="green"
+        x_quadratic,
+        y_quadratic,
+        label="Quadratic drag RK4",
+        color="green",
     )
 
-    axis.set_title("Projectile motion comparison.")
+    axis.set_title("Trajectory comparison")
     axis.set_xlabel("x [m]")
     axis.set_ylabel("y [m]")
 
     axis.legend()
     axis.grid(True)
 
-    plt.show()
+    save_and_show_plot(figure, save_path)
 
 
 def plot_speed(
     speed_no_drag: npt.NDArray[np.float64],
+    speed_linear: npt.NDArray[np.float64],
+    speed_quadratic: npt.NDArray[np.float64],
     time_no_drag: npt.NDArray[np.float64],
-    speed_linear_drag: npt.NDArray[np.float64],
-    time_linear_drag: npt.NDArray[np.float64],
-    speed_quadratic_drag: npt.NDArray[np.float64],
-    time_quadratic_drag: npt.NDArray[np.float64],
+    time_linear: npt.NDArray[np.float64],
+    time_quadratic: npt.NDArray[np.float64],
+    save_path: str | Path,
 ) -> None:
-
-    _, axis = plt.subplots()
+    figure, axis = plt.subplots()
 
     axis.plot(
         time_no_drag,
@@ -46,39 +60,41 @@ def plot_speed(
         label="No drag",
         color="red",
     )
+
     axis.plot(
-        time_linear_drag,
-        speed_linear_drag,
+        time_linear,
+        speed_linear,
         label="Linear drag",
         color="blue",
     )
+
     axis.plot(
-        time_quadratic_drag,
-        speed_quadratic_drag,
+        time_quadratic,
+        speed_quadratic,
         label="Quadratic drag RK4",
         color="green",
     )
 
-    axis.set_title("Speed comparison.")
+    axis.set_title("Speed comparison")
     axis.set_xlabel("t [s]")
     axis.set_ylabel("v [m/s]")
 
     axis.legend()
     axis.grid(True)
 
-    plt.show()
+    save_and_show_plot(figure, save_path)
 
 
 def plot_energy(
     mechanical_energy_no_drag: npt.NDArray[np.float64],
+    mechanical_energy_linear: npt.NDArray[np.float64],
+    mechanical_energy_quadratic: npt.NDArray[np.float64],
     time_no_drag: npt.NDArray[np.float64],
-    mechanical_energy_linear_drag: npt.NDArray[np.float64],
-    time_linear_drag: npt.NDArray[np.float64],
-    mechanical_energy_quadratic_drag: npt.NDArray[np.float64],
-    time_quadratic_drag: npt.NDArray[np.float64],
+    time_linear: npt.NDArray[np.float64],
+    time_quadratic: npt.NDArray[np.float64],
+    save_path: str | Path,
 ) -> None:
-
-    _, axis = plt.subplots()
+    figure, axis = plt.subplots()
 
     axis.plot(
         time_no_drag,
@@ -86,24 +102,26 @@ def plot_energy(
         label="No drag",
         color="red",
     )
+
     axis.plot(
-        time_linear_drag,
-        mechanical_energy_linear_drag,
+        time_linear,
+        mechanical_energy_linear,
         label="Linear drag",
         color="blue",
     )
+
     axis.plot(
-        time_quadratic_drag,
-        mechanical_energy_quadratic_drag,
+        time_quadratic,
+        mechanical_energy_quadratic,
         label="Quadratic drag RK4",
         color="green",
     )
 
-    axis.set_title("Mechanical energy comparison.")
+    axis.set_title("Mechanical energy comparison")
     axis.set_xlabel("t [s]")
     axis.set_ylabel("E [J]")
 
     axis.legend()
     axis.grid(True)
 
-    plt.show()
+    save_and_show_plot(figure, save_path)

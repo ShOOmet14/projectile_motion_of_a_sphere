@@ -9,7 +9,7 @@ from simulation.solve import (
     solve_projectile_motion_quadratic_drag,
 )
 
-# from visualization.plots import plot_motion, plot_energy
+from visualization.plots import plot_motion, plot_energy, plot_speed
 
 
 def result_to_dataframe(result: ProjectileResult) -> pd.DataFrame:
@@ -30,7 +30,7 @@ def result_to_dataframe(result: ProjectileResult) -> pd.DataFrame:
     return dataframe
 
 
-def save_result_to_csv(path: str, result: ProjectileResult) -> None:
+def save_result_to_csv(path: str | Path, result: ProjectileResult) -> None:
     dataframe = result_to_dataframe(result)
     dataframe.to_csv(path, index=False)
 
@@ -40,26 +40,42 @@ if __name__ == "__main__":
     linear_drag = solve_projectile_motion_linear_drag()
     quadratic_drag = solve_projectile_motion_quadratic_drag()
 
-    Path("results").mkdir(exist_ok=True)
+    results_directory = Path("results")
+    plots_directory = results_directory / "plots"
 
-    save_result_to_csv("results/no_drag.csv", no_drag)
-    save_result_to_csv("results/linear_drag.csv", linear_drag)
-    save_result_to_csv("results/quadratic_drag_rk4.csv", quadratic_drag)
+    results_directory.mkdir(exist_ok=True)
+    plots_directory.mkdir(exist_ok=True)
 
-    # plot_motion(
-    #     no_drag["x"],
-    #     no_drag["y"],
-    #     linear_drag["x"],
-    #     linear_drag["y"],
-    #     quadratic_drag["x"],
-    #     quadratic_drag["y"],
-    # )
+    save_result_to_csv(results_directory / "no_drag.csv", no_drag)
+    save_result_to_csv(results_directory / "linear_drag.csv", linear_drag)
+    save_result_to_csv(results_directory / "quadratic_drag_rk4.csv", quadratic_drag)
 
-    # plot_energy(
-    #     no_drag["E"],
-    #     linear_drag["E"],
-    #     quadratic_drag["E"],
-    #     no_drag["t"],
-    #     linear_drag["t"],
-    #     quadratic_drag["t"],
-    # )
+    plot_motion(
+        no_drag["x"],
+        no_drag["y"],
+        linear_drag["x"],
+        linear_drag["y"],
+        quadratic_drag["x"],
+        quadratic_drag["y"],
+        plots_directory / "trajectory_comparison.png",
+    )
+
+    plot_energy(
+        no_drag["E"],
+        linear_drag["E"],
+        quadratic_drag["E"],
+        no_drag["t"],
+        linear_drag["t"],
+        quadratic_drag["t"],
+        plots_directory / "energy_comparison.png",
+    )
+
+    plot_speed(
+        no_drag["v"],
+        linear_drag["v"],
+        quadratic_drag["v"],
+        no_drag["t"],
+        linear_drag["t"],
+        quadratic_drag["t"],
+        plots_directory / "speed_comparison.png",
+    )
