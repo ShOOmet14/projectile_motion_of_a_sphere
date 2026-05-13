@@ -11,18 +11,18 @@ from matplotlib.text import Text
 from simulation.solve import ProjectileResult
 
 
-GIF_FRAMES = 360
-GIF_FPS = 30
-FIGURE_DPI = 150
-FIGURE_SIZE = (10, 6)
+GIF_FRAMES = 180
+GIF_FPS = 24
+FIGURE_DPI = 100
+FIGURE_SIZE = (8, 5)
 
 
-def get_interpolated_position(
+def get_interpolated_positions(
     result: ProjectileResult,
-    animation_time: float,
-) -> tuple[float, float]:
-    x = float(np.interp(animation_time, result["t"], result["x"]))
-    y = float(np.interp(animation_time, result["t"], result["y"]))
+    animation_time: npt.NDArray[np.float64],
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    x = np.interp(animation_time, result["t"], result["x"])
+    y = np.interp(animation_time, result["t"], result["y"])
 
     return x, y
 
@@ -53,12 +53,28 @@ def animate_projectile_motion(
     quadratic_drag: ProjectileResult,
     save_path: str | Path,
 ) -> None:
-
     animation_time: npt.NDArray[np.float64] = np.linspace(
-        0.0, float(no_drag["t"][-1]), GIF_FRAMES, dtype=np.float64
+        0.0,
+        float(no_drag["t"][-1]),
+        GIF_FRAMES,
+        dtype=np.float64,
     )
 
-    max_x, max_y = get_max_axis_values(no_drag, linear_drag, quadratic_drag)
+    no_drag_x, no_drag_y = get_interpolated_positions(no_drag, animation_time)
+    linear_drag_x, linear_drag_y = get_interpolated_positions(
+        linear_drag,
+        animation_time,
+    )
+    quadratic_drag_x, quadratic_drag_y = get_interpolated_positions(
+        quadratic_drag,
+        animation_time,
+    )
+
+    max_x, max_y = get_max_axis_values(
+        no_drag,
+        linear_drag,
+        quadratic_drag,
+    )
 
     figure, axis = plt.subplots(figsize=FIGURE_SIZE, dpi=FIGURE_DPI)
 
@@ -67,7 +83,7 @@ def animate_projectile_motion(
         no_drag["y"],
         label="No drag",
         color="red",
-        linewidth=2.0,
+        linewidth=1.8,
         alpha=0.45,
     )
 
@@ -76,7 +92,7 @@ def animate_projectile_motion(
         linear_drag["y"],
         label="Linear drag",
         color="blue",
-        linewidth=2.0,
+        linewidth=1.8,
         alpha=0.45,
     )
 
@@ -85,22 +101,49 @@ def animate_projectile_motion(
         quadratic_drag["y"],
         label="Quadratic drag RK4",
         color="green",
-        linewidth=2.0,
+        linewidth=1.8,
         alpha=0.45,
     )
 
-    no_drag_point = axis.plot([], [], "o", color="red", markersize=8)[0]
+    no_drag_point = axis.plot(
+        [],
+        [],
+        "o",
+        color="red",
+        markersize=7,
+        markeredgecolor="black",
+        markeredgewidth=0.7,
+        label="_nolegend_",
+    )[0]
 
-    linear_drag_point = axis.plot([], [], "o", color="blue", markersize=8)[0]
+    linear_drag_point = axis.plot(
+        [],
+        [],
+        "o",
+        color="blue",
+        markersize=7,
+        markeredgecolor="black",
+        markeredgewidth=0.7,
+        label="_nolegend_",
+    )[0]
 
-    quadratic_drag_point = axis.plot([], [], "o", color="green", markersize=8)[0]
+    quadratic_drag_point = axis.plot(
+        [],
+        [],
+        "o",
+        color="green",
+        markersize=7,
+        markeredgecolor="black",
+        markeredgewidth=0.7,
+        label="_nolegend_",
+    )[0]
 
     time_text = axis.text(
         0.02,
         0.95,
         "",
         transform=axis.transAxes,
-        fontsize=11,
+        fontsize=10,
         bbox={
             "facecolor": "white",
             "alpha": 0.75,
@@ -111,36 +154,37 @@ def animate_projectile_motion(
     axis.set_title("Projectile motion animation")
     axis.set_xlabel("x [m]")
     axis.set_ylabel("y [m]")
-
     axis.set_xlim(0.0, max_x * 1.05)
     axis.set_ylim(0.0, max_y * 1.10)
-
     axis.legend(loc="upper right")
     axis.grid(True, alpha=0.35)
 
     figure.tight_layout()
 
     def update(frame_index: int) -> tuple[Line2D, Line2D, Line2D, Text]:
-        current_time = float(animation_time[frame_index])
-
-        x_no_drag, y_no_drag = get_interpolated_position(no_drag, current_time)
-        x_linear, y_linear = get_interpolated_position(linear_drag, current_time)
-        x_quadratic, y_quadratic = get_interpolated_position(
-            quadratic_drag, current_time
+        no_drag_point.set_data(
+            [float(no_drag_x[frame_index])],
+            [float(no_drag_y[frame_index])],
         )
 
-        no_drag_point.set_data([x_no_drag], [y_no_drag])
-        linear_drag_point.set_data([x_linear], [y_linear])
-        quadratic_drag_point.set_data([x_quadratic], [y_quadratic])
+        linear_drag_point.set_data(
+            [float(linear_drag_x[frame_index])],
+            [float(linear_drag_y[frame_index])],
+        )
 
-        time_text.set_text(f"t = {current_time:.2f} s")
+        quadratic_drag_point.set_data(
+            [float(quadratic_drag_x[frame_index])],
+            [float(quadratic_drag_y[frame_index])],
+        )
+
+        time_text.set_text(f"t = {animation_time[frame_index]:.2f} s")
 
         return no_drag_point, linear_drag_point, quadratic_drag_point, time_text
 
     animation = FuncAnimation(
         figure,
         update,
-        frames=len(animation_time),
+        frames=GIF_FRAMES,
         interval=1000 // GIF_FPS,
         blit=True,
     )

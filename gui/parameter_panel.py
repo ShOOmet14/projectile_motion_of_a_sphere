@@ -83,6 +83,8 @@ class ParameterPanel(QWidget):
 
         self.run_simulation_button = QPushButton("Run simulation")
         self.export_csv_button = QPushButton("Export CSV")
+        self.export_plots_button = QPushButton("Export plots")
+        self.export_animation_button = QPushButton("Export animation")
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
@@ -102,6 +104,8 @@ class ParameterPanel(QWidget):
         layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
         layout.addRow(self.run_simulation_button)
         layout.addRow(self.export_csv_button)
+        layout.addRow(self.export_plots_button)
+        layout.addRow(self.export_animation_button)
 
         self.setLayout(layout)
 
