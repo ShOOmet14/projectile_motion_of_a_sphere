@@ -82,6 +82,7 @@ class ParameterPanel(QWidget):
         self.t_max_input.setSuffix(" s")
 
         self.run_simulation_button = QPushButton("Run simulation")
+        self.export_csv_button = QPushButton("Export CSV")
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
@@ -100,6 +101,7 @@ class ParameterPanel(QWidget):
         layout.addRow(QLabel("Time step (<b>dt</b>):"), self.dt_input)
         layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
         layout.addRow(self.run_simulation_button)
+        layout.addRow(self.export_csv_button)
 
         self.setLayout(layout)
 

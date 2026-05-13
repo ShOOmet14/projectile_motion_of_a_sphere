@@ -1,40 +1,16 @@
 from pathlib import Path
 
-import pandas as pd
+from config.parameters import DEFAULT_PARAMETERS
 
 from simulation.solve import (
-    ProjectileResult,
     solve_projectile_motion_no_drag,
     solve_projectile_motion_linear_drag,
     solve_projectile_motion_quadratic_drag,
 )
 
+from results.csv_export import export_simulation_results_to_csv
 # from visualization.plots import plot_motion, plot_energy, plot_speed
 # from visualization.animation import animate_projectile_motion
-from config.parameters import DEFAULT_PARAMETERS
-
-
-def result_to_dataframe(result: ProjectileResult) -> pd.DataFrame:
-    dataframe = pd.DataFrame(
-        {
-            "t": result["t"],
-            "x": result["x"],
-            "y": result["y"],
-            "vx": result["vx"],
-            "vy": result["vy"],
-            "v": result["v"],
-            "Ek": result["Ek"],
-            "Ep": result["Ep"],
-            "E": result["E"],
-        }
-    )
-
-    return dataframe
-
-
-def save_result_to_csv(path: str | Path, result: ProjectileResult) -> None:
-    dataframe = result_to_dataframe(result)
-    dataframe.to_csv(path, index=False)
 
 
 if __name__ == "__main__":
@@ -52,9 +28,12 @@ if __name__ == "__main__":
     plots_directory.mkdir(exist_ok=True)
     animations_directory.mkdir(exist_ok=True)
 
-    save_result_to_csv(results_directory / "no_drag.csv", no_drag)
-    save_result_to_csv(results_directory / "linear_drag.csv", linear_drag)
-    save_result_to_csv(results_directory / "quadratic_drag_rk4.csv", quadratic_drag)
+    export_simulation_results_to_csv(
+        no_drag,
+        linear_drag,
+        quadratic_drag,
+        results_directory,
+    )
 
     # plot_motion(
     #     no_drag["x"],

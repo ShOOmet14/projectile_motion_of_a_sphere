@@ -34,7 +34,7 @@ class PlotCanvas(QWidget):
         self.axis.grid(True)
 
         self.figure.tight_layout()
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def finish_plot(self) -> None:
         self.axis.set_title(self.title)
@@ -45,7 +45,7 @@ class PlotCanvas(QWidget):
         self.axis.grid(True)
 
         self.figure.tight_layout()
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def plot_trajectory_comparison(
         self,

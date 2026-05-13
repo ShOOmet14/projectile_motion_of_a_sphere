@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 from gui.parameter_panel import ParameterPanel
 from gui.plot_canvas import PlotCanvas
 from gui.results_panel import ResultsPanel
+from results.csv_export import export_simulation_results_to_csv
 
 from simulation.solve import (
     solve_projectile_motion_no_drag,
@@ -56,6 +57,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.results_panel, "Results")
 
         self.parameter_panel.run_simulation_button.clicked.connect(self.run_simulation)
+        self.parameter_panel.export_csv_button.clicked.connect(self.export_csv)
 
         main_layout.addWidget(self.parameter_panel)
         main_layout.addWidget(self.tabs, 1)
