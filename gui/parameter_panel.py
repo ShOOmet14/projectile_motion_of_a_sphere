@@ -81,7 +81,7 @@ class ParameterPanel(QWidget):
         self.t_max_input.setDecimals(2)
         self.t_max_input.setSuffix(" s")
 
-        self.print_parameters_button = QPushButton("Print parameters")
+        self.run_simulation_button = QPushButton("Run simulation")
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
@@ -99,7 +99,7 @@ class ParameterPanel(QWidget):
         layout.addRow(QLabel("Air density (<b>\u03c1</b>):"), self.air_density_input)
         layout.addRow(QLabel("Time step (<b>dt</b>):"), self.dt_input)
         layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
-        layout.addRow(self.print_parameters_button)
+        layout.addRow(self.run_simulation_button)
 
         self.setLayout(layout)
 
