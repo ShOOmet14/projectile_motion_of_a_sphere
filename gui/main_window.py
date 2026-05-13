@@ -6,12 +6,14 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QTabWidget,
     QWidget,
+    QDialog,
 )
 
 from gui.animation_canvas import AnimationCanvas
 from gui.parameter_panel import ParameterPanel
 from gui.plot_canvas import PlotCanvas
 from gui.results_panel import ResultsPanel
+from gui.settings_window import SettingsWindow
 
 from simulation.solve import (
     ProjectileResult,
@@ -77,6 +79,7 @@ class MainWindow(QMainWindow):
         self.parameter_panel.export_animation_button.clicked.connect(
             self.export_animation
         )
+        self.parameter_panel.settings_button.clicked.connect(self.open_settings)
 
         main_layout.addWidget(self.parameter_panel)
         main_layout.addWidget(self.tabs, 1)
@@ -246,3 +249,15 @@ class MainWindow(QMainWindow):
             "Export complete",
             "Animation saved to results/animations/projectile_motion.gif.",
         )
+
+    def open_settings(self) -> None:
+        current_parameters = self.parameter_panel.get_parameters()
+
+        settings_window = SettingsWindow(current_parameters)
+
+        if settings_window.exec() == QDialog.DialogCode.Accepted:
+            updated_parameters = settings_window.get_updated_parameters(
+                current_parameters
+            )
+
+            self.parameter_panel.set_parameters(updated_parameters)

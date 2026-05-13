@@ -85,6 +85,7 @@ class ParameterPanel(QWidget):
         self.export_csv_button = QPushButton("Export CSV")
         self.export_plots_button = QPushButton("Export plots")
         self.export_animation_button = QPushButton("Export animation")
+        self.settings_button = QPushButton("Settings")
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
@@ -106,6 +107,7 @@ class ParameterPanel(QWidget):
         layout.addRow(self.export_csv_button)
         layout.addRow(self.export_plots_button)
         layout.addRow(self.export_animation_button)
+        layout.addRow(self.settings_button)
 
         self.setLayout(layout)
 
@@ -122,3 +124,14 @@ class ParameterPanel(QWidget):
             t_max=self.t_max_input.value(),
             g=DEFAULT_PARAMETERS.g,
         )
+
+    def set_parameters(self, parameters: Parameters) -> None:
+        self.velocity_input.setValue(parameters.v0)
+        self.angle_input.setValue(parameters.angle_deg)
+        self.mass_input.setValue(parameters.mass)
+        self.radius_input.setValue(parameters.radius)
+        self.drag_coefficient_input.setValue(parameters.cd)
+        self.air_density_input.setValue(parameters.rho)
+        self.linear_drag_coefficient_input.setValue(parameters.linear_drag)
+        self.dt_input.setValue(parameters.dt)
+        self.t_max_input.setValue(parameters.t_max)
