@@ -9,8 +9,8 @@ from simulation.solve import (
     solve_projectile_motion_quadratic_drag,
 )
 
-from visualization.plots import plot_motion, plot_energy, plot_speed
-from visualization.animation import animate_projectile_motion
+# from visualization.plots import plot_motion, plot_energy, plot_speed
+# from visualization.animation import animate_projectile_motion
 from config.parameters import DEFAULT_PARAMETERS
 
 
@@ -56,39 +56,39 @@ if __name__ == "__main__":
     save_result_to_csv(results_directory / "linear_drag.csv", linear_drag)
     save_result_to_csv(results_directory / "quadratic_drag_rk4.csv", quadratic_drag)
 
-    plot_motion(
-        no_drag["x"],
-        no_drag["y"],
-        linear_drag["x"],
-        linear_drag["y"],
-        quadratic_drag["x"],
-        quadratic_drag["y"],
-        plots_directory / "trajectory_comparison.png",
-    )
+    # plot_motion(
+    #     no_drag["x"],
+    #     no_drag["y"],
+    #     linear_drag["x"],
+    #     linear_drag["y"],
+    #     quadratic_drag["x"],
+    #     quadratic_drag["y"],
+    #     plots_directory / "trajectory_comparison.png",
+    # )
 
-    plot_energy(
-        no_drag["E"],
-        linear_drag["E"],
-        quadratic_drag["E"],
-        no_drag["t"],
-        linear_drag["t"],
-        quadratic_drag["t"],
-        plots_directory / "energy_comparison.png",
-    )
+    # plot_energy(
+    #     no_drag["E"],
+    #     linear_drag["E"],
+    #     quadratic_drag["E"],
+    #     no_drag["t"],
+    #     linear_drag["t"],
+    #     quadratic_drag["t"],
+    #     plots_directory / "energy_comparison.png",
+    # )
 
-    plot_speed(
-        no_drag["v"],
-        linear_drag["v"],
-        quadratic_drag["v"],
-        no_drag["t"],
-        linear_drag["t"],
-        quadratic_drag["t"],
-        plots_directory / "speed_comparison.png",
-    )
+    # plot_speed(
+    #     no_drag["v"],
+    #     linear_drag["v"],
+    #     quadratic_drag["v"],
+    #     no_drag["t"],
+    #     linear_drag["t"],
+    #     quadratic_drag["t"],
+    #     plots_directory / "speed_comparison.png",
+    # )
 
-    animate_projectile_motion(
-        no_drag,
-        linear_drag,
-        quadratic_drag,
-        animations_directory / "projectile_motion.gif",
-    )
+    # animate_projectile_motion(
+    #     no_drag,
+    #     linear_drag,
+    #     quadratic_drag,
+    #     animations_directory / "projectile_motion.gif",
+    # )

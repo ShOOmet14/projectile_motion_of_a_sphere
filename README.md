@@ -17,3 +17,41 @@
 15. make good readme
 
 CSV contains interpolated point for ground hit.
+
+---
+
+Parameters panel:
+
+- Lists all parameters that you can change, allows you to change them
+
+---
+
+Results panel:
+
+- Lists all results:
+  1. energies: initial, min, max
+  2. speeds: initial, min, max
+  3. max height
+  4. max range
+  5. flight time
+
+---
+
+Settings panel:
+
+- Change options:
+  1. change image/video output folder
+  2. change theme / dark / light
+  3. open image folder
+
+---
+
+Video playback:
+
+- Makes possible to playback calculated video
+
+---
+
+Images / plots:
+
+- Shows plots for energy, speed and position
