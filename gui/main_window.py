@@ -1,15 +1,14 @@
 from PySide6.QtWidgets import (
-    QLabel,
     QHBoxLayout,
     QMainWindow,
     QMessageBox,
-    QVBoxLayout,
+    QTabWidget,
     QWidget,
 )
 
 from gui.parameter_panel import ParameterPanel
-from gui.results_panel import ResultsPanel
 from gui.plot_canvas import PlotCanvas
+from gui.results_panel import ResultsPanel
 
 from simulation.solve import (
     solve_projectile_motion_no_drag,
@@ -29,36 +28,37 @@ class MainWindow(QMainWindow):
         main_layout = QHBoxLayout()
 
         self.parameter_panel = ParameterPanel()
+
+        self.trajectory_canvas = PlotCanvas(
+            title="Trajectory comparison",
+            x_label="x [m]",
+            y_label="y [m]",
+        )
+
+        self.energy_canvas = PlotCanvas(
+            title="Mechanical energy comparison",
+            x_label="t [s]",
+            y_label="E [J]",
+        )
+
+        self.speed_canvas = PlotCanvas(
+            title="Speed comparison",
+            x_label="t [s]",
+            y_label="v [m/s]",
+        )
+
         self.results_panel = ResultsPanel()
-        self.plot_canvas = PlotCanvas()
+
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.trajectory_canvas, "Trajectory")
+        self.tabs.addTab(self.energy_canvas, "Energy")
+        self.tabs.addTab(self.speed_canvas, "Speed")
+        self.tabs.addTab(self.results_panel, "Results")
 
         self.parameter_panel.run_simulation_button.clicked.connect(self.run_simulation)
 
-        left_panel = QWidget()
-        left_panel.setFixedWidth(380)
-
-        left_layout = QVBoxLayout()
-        left_layout.addWidget(self.parameter_panel)
-        left_layout.addWidget(self.results_panel, 1)
-
-        left_panel.setLayout(left_layout)
-
-        main_area = QWidget()
-        main_area_layout = QVBoxLayout()
-
-        video_area = QLabel("Video playback")
-        video_area.setMinimumHeight(250)
-        video_area.setStyleSheet(
-            "border: 1px solid gray; font-size: 24px; qproperty-alignment: AlignCenter;"
-        )
-
-        main_area_layout.addWidget(video_area)
-        main_area_layout.addWidget(self.plot_canvas, 1)
-
-        main_area.setLayout(main_area_layout)
-
-        main_layout.addWidget(left_panel)
-        main_layout.addWidget(main_area, 1)
+        main_layout.addWidget(self.parameter_panel)
+        main_layout.addWidget(self.tabs, 1)
 
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
@@ -71,13 +71,25 @@ class MainWindow(QMainWindow):
             linear_drag = solve_projectile_motion_linear_drag(parameters)
             quadratic_drag = solve_projectile_motion_quadratic_drag(parameters)
 
-            self.results_panel.set_results(
+            self.trajectory_canvas.plot_trajectory_comparison(
                 no_drag,
                 linear_drag,
                 quadratic_drag,
             )
 
-            self.plot_canvas.plot_trajectory_comparison(
+            self.energy_canvas.plot_energy_comparison(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+            )
+
+            self.speed_canvas.plot_speed_comparison(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+            )
+
+            self.results_panel.set_results(
                 no_drag,
                 linear_drag,
                 quadratic_drag,
