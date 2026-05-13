@@ -11,7 +11,9 @@
 9. make animations for them in motion ✅
 10. add GUI maybe, if simple to make
 11. add options for changing constatns inside like settings or constatns window
-12. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
-13. make good readme
+12. make nice looking windows using styling in css
+13. take wind into consideration
+14. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
+15. make good readme
 
 CSV contains interpolated point for ground hit.

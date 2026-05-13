@@ -17,6 +17,9 @@ class ParameterPanel(QWidget):
 
         layout = QFormLayout()
 
+        self.parameters_label = QLabel("Parameters")
+        self.parameters_label.setProperty("class", "h1")
+
         self.velocity_input = QDoubleSpinBox()
         self.velocity_input.setRange(0.0, 1000.0)
         self.velocity_input.setValue(DEFAULT_PARAMETERS.v0)
@@ -80,18 +83,22 @@ class ParameterPanel(QWidget):
 
         self.print_parameters_button = QPushButton("Print parameters")
 
-        layout.addRow(QLabel("Initial speed:"), self.velocity_input)
-        layout.addRow(QLabel("Angle:"), self.angle_input)
-        layout.addRow(QLabel("Mass:"), self.mass_input)
-        layout.addRow(QLabel("Radius:"), self.radius_input)
-        layout.addRow(QLabel("Cd:"), self.drag_coefficient_input)
-        layout.addRow(QLabel("Air density:"), self.air_density_input)
+        layout.addRow(self.parameters_label)
+        layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
+        layout.addRow(QLabel("Angle (<b>\u03b1</b>):"), self.angle_input)
+        layout.addRow(QLabel("Mass (<b>m</b>):"), self.mass_input)
+        layout.addRow(QLabel("Radius (<b>R</b>):"), self.radius_input)
         layout.addRow(
-            QLabel("Linear drag coefficient:"),
+            QLabel("Linear drag coefficient (<b>b</b>):"),
             self.linear_drag_coefficient_input,
         )
-        layout.addRow(QLabel("Time step:"), self.dt_input)
-        layout.addRow(QLabel("Max time:"), self.t_max_input)
+        layout.addRow(
+            QLabel("Quadratic drag coefficient (<b>Cd</b>):"),
+            self.drag_coefficient_input,
+        )
+        layout.addRow(QLabel("Air density (<b>\u03c1</b>):"), self.air_density_input)
+        layout.addRow(QLabel("Time step (<b>dt</b>):"), self.dt_input)
+        layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
         layout.addRow(self.print_parameters_button)
 
         self.setLayout(layout)

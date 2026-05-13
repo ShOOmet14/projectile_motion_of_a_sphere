@@ -1,0 +1,8 @@
+QLabel[class="h1"] {
+	font-size: 17pt;
+	font-weight: bold;
+	margin-bottom: 10px;
+
+	border: 0px;
+	border-bottom: 1px solid #000000;
+}
