@@ -44,6 +44,7 @@ class ResultsPanel(QWidget):
         max_height = float(np.max(result["y"]))
 
         initial_speed = float(result["v"][0])
+        min_speed = float(result["v"].min())
         final_speed = float(result["v"][-1])
 
         initial_energy = float(result["E"][0])
@@ -51,11 +52,12 @@ class ResultsPanel(QWidget):
 
         return (
             f"{model_name}:\n"
-            f"Flight time:    {flight_time:.2f} s\n"
-            f"Range:          {projectile_range:.2f} m\n"
-            f"Max height:     {max_height:.2f} m\n"
-            f"Initial speed:  {initial_speed:.2f} m/s\n"
-            f"Final speed:    {final_speed:.2f} m/s\n"
+            f"Flight time: {flight_time:.2f} s\n"
+            f"Range: {projectile_range:.2f} m\n"
+            f"Max height: {max_height:.2f} m\n"
+            f"Initial speed: {initial_speed:.2f} m/s\n"
+            f"Min speed: {min_speed:.2f} m/s\n"
+            f"Final speed: {final_speed:.2f} m/s\n"
             f"Initial energy: {initial_energy:.2f} J\n"
-            f"Final energy:   {final_energy:.2f} J"
+            f"Final energy: {final_energy:.2f} J"
         )
