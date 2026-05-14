@@ -10,7 +10,7 @@ from config.parameters import DEFAULT_PARAMETERS, Parameters
 
 
 class ParameterPanel(QWidget):
-    def __init__(self) -> None:
+    def __init__(self, parameters: Parameters = DEFAULT_PARAMETERS) -> None:
         super().__init__()
 
         self.setFixedWidth(320)
@@ -32,7 +32,7 @@ class ParameterPanel(QWidget):
         self.angle_input.setValue(parameters.angle_deg)
         self.angle_input.setSingleStep(0.1)
         self.angle_input.setDecimals(1)
-        self.angle_input.setSuffix(" \u00b0")
+        self.angle_input.setSuffix(" °")
 
         self.mass_input = QDoubleSpinBox()
         self.mass_input.setRange(0.001, 100.0)
@@ -91,7 +91,7 @@ class ParameterPanel(QWidget):
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
-        layout.addRow(QLabel("Angle (<b>\u03b1</b>):"), self.angle_input)
+        layout.addRow(QLabel("Angle (<b>α</b>):"), self.angle_input)
         layout.addRow(QLabel("Mass (<b>m</b>):"), self.mass_input)
         layout.addRow(QLabel("Radius (<b>R</b>):"), self.radius_input)
         layout.addRow(
@@ -102,14 +102,14 @@ class ParameterPanel(QWidget):
             QLabel("Quadratic drag coefficient (<b>Cd</b>):"),
             self.drag_coefficient_input,
         )
-        layout.addRow(QLabel("Air density (<b>\u03c1</b>):"), self.air_density_input)
+        layout.addRow(QLabel("Air density (<b>ρ</b>):"), self.air_density_input)
         layout.addRow(QLabel("Time step (<b>dt</b>):"), self.dt_input)
         layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
         layout.addRow(self.run_simulation_button)
+        layout.addRow(self.settings_button)
         layout.addRow(self.export_csv_button)
         layout.addRow(self.export_plots_button)
         layout.addRow(self.export_animation_button)
-        layout.addRow(self.settings_button)
 
         self.setLayout(layout)
 
@@ -128,8 +128,6 @@ class ParameterPanel(QWidget):
         )
 
     def set_parameters(self, parameters: Parameters) -> None:
-        self.current_g = parameters.g
-
         self.velocity_input.setValue(parameters.v0)
         self.angle_input.setValue(parameters.angle_deg)
         self.mass_input.setValue(parameters.mass)
@@ -139,3 +137,4 @@ class ParameterPanel(QWidget):
         self.linear_drag_coefficient_input.setValue(parameters.linear_drag)
         self.dt_input.setValue(parameters.dt)
         self.t_max_input.setValue(parameters.t_max)
+        self.current_g = parameters.g
