@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QDialog,
 )
+from PySide6.QtGui import QCloseEvent
 
 from gui.animation_canvas import AnimationCanvas
 from gui.parameter_panel import ParameterPanel
@@ -22,6 +23,7 @@ from simulation.solve import (
     solve_projectile_motion_quadratic_drag,
 )
 
+from config.user_settings import load_user_settings, save_user_settings
 from storage.csv_export import export_simulation_results_to_csv
 
 from visualization.animation import animate_projectile_motion
@@ -42,7 +44,8 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         main_layout = QHBoxLayout()
 
-        self.parameter_panel = ParameterPanel()
+        self.current_parameters = load_user_settings()
+        self.parameter_panel = ParameterPanel(self.current_parameters)
 
         self.trajectory_canvas = PlotCanvas(
             title="Trajectory comparison",
@@ -90,6 +93,8 @@ class MainWindow(QMainWindow):
     def run_simulation(self) -> None:
         try:
             parameters = self.parameter_panel.get_parameters()
+            self.current_parameters = parameters
+            save_user_settings(parameters)
 
             no_drag = solve_projectile_motion_no_drag(parameters)
             linear_drag = solve_projectile_motion_linear_drag(parameters)
@@ -260,4 +265,12 @@ class MainWindow(QMainWindow):
                 current_parameters
             )
 
+            self.current_parameters = updated_parameters
             self.parameter_panel.set_parameters(updated_parameters)
+            save_user_settings(updated_parameters)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        parameters = self.parameter_panel.get_parameters()
+        save_user_settings(parameters)
+
+        super().closeEvent(event)

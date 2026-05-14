@@ -2,3 +2,4 @@ venv
 *.zip
 __pycache__/
 pyrightconfig.json
+user_settings.json
