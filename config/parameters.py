@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from math import cos, pi, sin
+from math import cos, pi, sin, isfinite
+
+MAX_SIMULATION_STEPS = 1_000_000
 
 
 @dataclass(frozen=True)
@@ -22,6 +24,25 @@ class Parameters:
     y0: float = 0.0
 
     def __post_init__(self) -> None:
+        for name in (
+            "v0",
+            "angle_deg",
+            "mass",
+            "radius",
+            "cd",
+            "rho",
+            "linear_drag",
+            "dt",
+            "t_max",
+            "g",
+            "x0",
+            "y0",
+        ):
+            value = getattr(self, name)
+
+            if not isfinite(value):
+                raise ValueError(f"{name} must be a finite number.")
+
         if self.v0 < 0:
             raise ValueError("Initial speed v0 must be greater than or equal to zero.")
 
@@ -53,6 +74,11 @@ class Parameters:
 
         if self.g <= 0:
             raise ValueError("Gravity g must be greater than zero.")
+
+        if self.t_max / self.dt > MAX_SIMULATION_STEPS:
+            raise ValueError(
+                "Too many simulation steps. Increase dt or decrease t_max."
+            )
 
     @property
     def angle_rad(self) -> float:
