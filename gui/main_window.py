@@ -276,6 +276,32 @@ class MainWindow(QMainWindow):
             ),
         )
 
+    def change_theme(self, theme_text: str) -> None:
+        if not is_theme_name(theme_text):
+            return
+
+        self.current_theme = theme_text
+        save_theme(theme_text)
+
+        application = QApplication.instance()
+
+        if isinstance(application, QApplication):
+            application.setStyleSheet(get_stylesheet(theme_text))
+
+    def open_plots_folder(self) -> None:
+        plots_directory = Path("results") / "plots"
+        plots_directory.mkdir(parents=True, exist_ok=True)
+
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(plots_directory.resolve())))
+
+    def open_animations_folder(self) -> None:
+        animations_directory = Path("results") / "animations"
+        animations_directory.mkdir(parents=True, exist_ok=True)
+
+        QDesktopServices.openUrl(
+            QUrl.fromLocalFile(str(animations_directory.resolve()))
+        )
+
     def closeEvent(self, event: QCloseEvent) -> None:
         parameters = self.parameter_panel.get_parameters()
         save_user_settings(parameters)
