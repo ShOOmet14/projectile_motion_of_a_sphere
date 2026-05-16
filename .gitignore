@@ -1,6 +1,8 @@
-venv
+venv/
 *.zip
 __pycache__/
 pyrightconfig.json
-user_settings.json
-app_settings.json
+
+config/user_settings.json
+config/app_settings.json
+results/

@@ -1,6 +1,6 @@
 # To do
 
-1. refractoring of the code, join similar files, make the project have as little files as it needs. if ok don't change anything
+1. refractoring and fixing of the code, join similar files, make the project have as little files as it needs. if ok don't change anything
 2. make nice looking windows using styling in css
 3. take wind into consideration
 4. add vectors on plots for wind (an arrow which points in wind direction)
