@@ -3,3 +3,4 @@ venv
 __pycache__/
 pyrightconfig.json
 user_settings.json
+app_settings.json
