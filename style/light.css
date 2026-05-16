@@ -10,6 +10,33 @@ QComboBox {
 	border: 1px solid #aaaaaa;
 }
 
+QDoubleSpinBox::up-button,
+QDoubleSpinBox::down-button {
+	background-color: #eeeeee;
+	border-left: 1px solid #aaaaaa;
+}
+
+QDoubleSpinBox::up-button {
+	border-bottom: 1px solid #aaaaaa;
+}
+
+QDoubleSpinBox::up-button:hover,
+QDoubleSpinBox::down-button:hover {
+	background-color: #dddddd;
+}
+
+QDoubleSpinBox::up-arrow {
+	image: url(style/icons/arrow-up-dark.svg);
+	width: 10px;
+	height: 10px;
+}
+
+QDoubleSpinBox::down-arrow {
+	image: url(style/icons/arrow-down-dark.svg);
+	width: 10px;
+	height: 10px;
+}
+
 QPushButton {
 	background-color: #eeeeee;
 	color: #111111;

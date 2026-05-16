@@ -7,7 +7,6 @@ QPushButton {
 	border-radius: 4px;
 }
 
-QDoubleSpinBox,
 QComboBox {
 	padding: 4px;
 }
@@ -16,4 +15,20 @@ QLabel[class="h1"] {
 	font-size: 20px;
 	font-weight: bold;
 	padding-bottom: 6px;
+}
+
+QDoubleSpinBox {
+	padding-right: 24px;
+}
+
+QDoubleSpinBox::up-button {
+	subcontrol-origin: border;
+	subcontrol-position: top right;
+	width: 22px;
+}
+
+QDoubleSpinBox::down-button {
+	subcontrol-origin: border;
+	subcontrol-position: bottom right;
+	width: 22px;
 }
