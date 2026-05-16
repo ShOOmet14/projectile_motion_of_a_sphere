@@ -2,8 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from config.app_settings import load_theme
-from config.theme import get_stylesheet
+from config.settings import get_stylesheet, load_theme
 from gui.main_window import MainWindow
 
 

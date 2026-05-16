@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from config.parameters import DEFAULT_PARAMETERS, Parameters
-from config.app_settings import ThemeName
+from config.settings import ThemeName
 
 
 class ParameterPanel(QWidget):

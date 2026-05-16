@@ -23,9 +23,15 @@ from simulation.solve import (
     solve_projectile_motion_quadratic_drag,
 )
 
-from config.user_settings import load_user_settings, save_user_settings
-from config.app_settings import ThemeName, is_theme_name, load_theme, save_theme
-from config.theme import get_stylesheet
+from config.settings import (
+    ThemeName,
+    get_stylesheet,
+    is_theme_name,
+    load_theme,
+    load_user_settings,
+    save_theme,
+    save_user_settings,
+)
 from storage.csv_export import export_simulation_results_to_csv
 
 from visualization.animation import animate_projectile_motion
