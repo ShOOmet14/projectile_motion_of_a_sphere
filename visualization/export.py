@@ -4,9 +4,8 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 
-from matplotlib.figure import Figure
-
 from matplotlib.animation import FuncAnimation, PillowWriter
+from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.text import Text
 

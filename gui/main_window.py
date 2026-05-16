@@ -34,8 +34,12 @@ from config.settings import (
 )
 from storage.csv_export import export_simulation_results_to_csv
 
-from visualization.animation import animate_projectile_motion
-from visualization.plots import plot_motion, plot_energy, plot_speed
+from visualization.export import (
+    plot_motion,
+    plot_energy,
+    plot_speed,
+    animate_projectile_motion,
+)
 
 
 class MainWindow(QMainWindow):
