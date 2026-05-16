@@ -3,15 +3,94 @@ import numpy.typing as npt
 
 from config.parameters import DEFAULT_PARAMETERS, Parameters
 
-from physics.no_drag import calculate_position_no_drag, calculate_velocity_no_drag
-from physics.linear_drag import (
-    calculate_position_linear_drag,
-    calculate_velocity_linear_drag,
-)
-from physics.quadratic_drag import runge_kutta_method
-
 # Type constants:
 ProjectileResult = dict[str, npt.NDArray[np.float64]]
+
+
+def calculate_position_linear_drag(
+    time: npt.NDArray[np.float64],
+    x0: float,
+    y0: float,
+    vx0: float,
+    vy0: float,
+    k: float,
+    g: float,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    position_x = x0 + vx0 * (1.0 - np.exp(-k * time)) / k
+
+    position_y = y0 + (vy0 + g / k) * (1.0 - np.exp(-k * time)) / k - g * time / k
+
+    return position_x, position_y
+
+
+def calculate_position_no_drag(
+    time: npt.NDArray[np.float64],
+    x0: float,
+    y0: float,
+    vx0: float,
+    vy0: float,
+    g: float,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    position_x = x0 + vx0 * time
+    position_y = y0 + vy0 * time - 0.5 * g * time * time
+
+    return position_x, position_y
+
+
+def calculate_velocity_no_drag(
+    time: npt.NDArray[np.float64],
+    vx0: float,
+    vy0: float,
+    g: float,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    velocity_x = np.full_like(time, vx0)
+    velocity_y = vy0 - g * time
+
+    return velocity_x, velocity_y
+
+
+def calculate_velocity_linear_drag(
+    time: npt.NDArray[np.float64],
+    vx0: float,
+    vy0: float,
+    k: float,
+    g: float,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    velocity_x = vx0 * np.exp(-k * time)
+    velocity_y = (vy0 + g / k) * np.exp(-k * time) - g / k
+
+    return velocity_x, velocity_y
+
+
+def calculate_state_quadratic_drag(
+    state: npt.NDArray[np.float64],
+    q: float,
+    g: float,
+) -> npt.NDArray[np.float64]:
+    _, _, vx, vy = state
+
+    v = np.hypot(vx, vy)
+
+    ax = -q * v * vx
+    ay = -g - q * v * vy
+
+    return np.array([vx, vy, ax, ay], dtype=np.float64)
+
+
+def runge_kutta_method(
+    state_old: npt.NDArray[np.float64],
+    dt: float,
+    q: float,
+    g: float,
+) -> npt.NDArray[np.float64]:
+    k1 = calculate_state_quadratic_drag(state_old, q, g)
+    k2 = calculate_state_quadratic_drag(state_old + dt * k1 / 2.0, q, g)
+    k3 = calculate_state_quadratic_drag(state_old + dt * k2 / 2.0, q, g)
+    k4 = calculate_state_quadratic_drag(state_old + dt * k3, q, g)
+
+    state_new = state_old + dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
+
+    return state_new
 
 
 def interpolate_value_at_ground(
