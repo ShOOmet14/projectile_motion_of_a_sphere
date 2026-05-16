@@ -17,7 +17,7 @@ class ParameterPanel(QWidget):
     ) -> None:
         super().__init__()
 
-        self.setFixedWidth(320)
+        self.setMinimumWidth(350)
 
         layout = QFormLayout()
 
