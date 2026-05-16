@@ -1,0 +1,35 @@
+QWidget {
+	background-color: #202124;
+	color: #f1f1f1;
+}
+
+QDoubleSpinBox,
+QComboBox {
+	background-color: #2b2d31;
+	color: #f1f1f1;
+	border: 1px solid #555555;
+}
+
+QPushButton {
+	background-color: #303134;
+	color: #f1f1f1;
+	border: 1px solid #666666;
+}
+
+QPushButton:hover {
+	background-color: #3c4043;
+}
+
+QTabWidget::pane {
+	border: 1px solid #555555;
+}
+
+QTabBar::tab {
+	background: #303134;
+	color: #f1f1f1;
+	padding: 6px;
+}
+
+QTabBar::tab:selected {
+	background: #3c4043;
+}

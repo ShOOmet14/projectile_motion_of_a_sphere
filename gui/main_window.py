@@ -24,6 +24,8 @@ from simulation.solve import (
 )
 
 from config.user_settings import load_user_settings, save_user_settings
+from config.app_settings import load_theme, save_theme
+from config.theme import get_stylesheet
 from storage.csv_export import export_simulation_results_to_csv
 
 from visualization.animation import animate_projectile_motion

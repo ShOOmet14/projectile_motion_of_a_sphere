@@ -1,20 +1,16 @@
 import sys
-from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
 
+from config.app_settings import load_theme
+from config.theme import get_stylesheet
 from gui.main_window import MainWindow
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    directory = Path(__file__).resolve().parent
-    style_path = directory / "style" / "style.css"
-
-    if style_path.exists():
-        with open(style_path, "r", encoding="utf-8") as file:
-            app.setStyleSheet(file.read())
+    app.setStyleSheet(get_stylesheet(load_theme()))
 
     window = MainWindow()
     window.show()
