@@ -10,3 +10,11 @@
 8. make good readme
 
 CSV contains interpolated point for ground hit.
+
+## Example images:
+
+![Trajectory plot](docs/readme-assets/plots/trajectory_comparison.png)
+![Energy plot](docs/readme-assets/plots/energy_comparison.png)
+![Speed plot](docs/readme-assets/plots/speed_comparison.png)
+
+![Projectile animation](docs/readme-assets/animation/projectile_motion.gif)
