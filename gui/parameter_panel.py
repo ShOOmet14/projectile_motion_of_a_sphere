@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QComboBox,
     QDoubleSpinBox,
     QFormLayout,
     QLabel,
@@ -7,10 +8,13 @@ from PySide6.QtWidgets import (
 )
 
 from config.parameters import DEFAULT_PARAMETERS, Parameters
+from config.app_settings import ThemeName
 
 
 class ParameterPanel(QWidget):
-    def __init__(self, parameters: Parameters = DEFAULT_PARAMETERS) -> None:
+    def __init__(
+        self, parameters: Parameters = DEFAULT_PARAMETERS, theme: ThemeName = "light"
+    ) -> None:
         super().__init__()
 
         self.setFixedWidth(320)
@@ -81,13 +85,27 @@ class ParameterPanel(QWidget):
         self.t_max_input.setDecimals(2)
         self.t_max_input.setSuffix(" s")
 
+        self.gravity_input = QDoubleSpinBox()
+        self.gravity_input.setRange(0.1, 100.0)
+        self.gravity_input.setValue(parameters.g)
+        self.gravity_input.setSingleStep(0.01)
+        self.gravity_input.setDecimals(5)
+        self.gravity_input.setSuffix(" m/s²")
+
         self.run_simulation_button = QPushButton("Run simulation")
         self.export_csv_button = QPushButton("Export CSV")
         self.export_plots_button = QPushButton("Export plots")
         self.export_animation_button = QPushButton("Export animation")
-        self.settings_button = QPushButton("Settings")
 
-        self.current_g = parameters.g
+        self.settings_label = QLabel("Settings")
+        self.settings_label.setProperty("class", "h1")
+
+        self.theme_input = QComboBox()
+        self.theme_input.addItems(["light", "dark"])
+        self.theme_input.setCurrentText(theme)
+
+        self.open_plots_folder_button = QPushButton("Open plots folder")
+        self.open_animations_folder_button = QPushButton("Open GIF folder")
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
@@ -105,11 +123,16 @@ class ParameterPanel(QWidget):
         layout.addRow(QLabel("Air density (<b>ρ</b>):"), self.air_density_input)
         layout.addRow(QLabel("Time step (<b>dt</b>):"), self.dt_input)
         layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
+        layout.addRow(QLabel("Gravity (<b>g</b>):"), self.gravity_input)
         layout.addRow(self.run_simulation_button)
-        layout.addRow(self.settings_button)
         layout.addRow(self.export_csv_button)
         layout.addRow(self.export_plots_button)
         layout.addRow(self.export_animation_button)
+
+        layout.addRow(self.settings_label)
+        layout.addRow(QLabel("Theme:"), self.theme_input)
+        layout.addRow(self.open_plots_folder_button)
+        layout.addRow(self.open_animations_folder_button)
 
         self.setLayout(layout)
 
@@ -124,7 +147,7 @@ class ParameterPanel(QWidget):
             linear_drag=self.linear_drag_coefficient_input.value(),
             dt=self.dt_input.value(),
             t_max=self.t_max_input.value(),
-            g=self.current_g,
+            g=self.gravity_input.value(),
         )
 
     def set_parameters(self, parameters: Parameters) -> None:
@@ -137,4 +160,4 @@ class ParameterPanel(QWidget):
         self.linear_drag_coefficient_input.setValue(parameters.linear_drag)
         self.dt_input.setValue(parameters.dt)
         self.t_max_input.setValue(parameters.t_max)
-        self.current_g = parameters.g
+        self.gravity_input.setValue(parameters.g)

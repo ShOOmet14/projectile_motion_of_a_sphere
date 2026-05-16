@@ -2,20 +2,19 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (
     QApplication,
-    QDialog,
     QHBoxLayout,
     QMainWindow,
     QMessageBox,
     QTabWidget,
     QWidget,
 )
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QCloseEvent, QDesktopServices
 
 from gui.animation_canvas import AnimationCanvas
 from gui.parameter_panel import ParameterPanel
 from gui.plot_canvas import PlotCanvas
 from gui.results_panel import ResultsPanel
-from gui.settings_window import SettingsWindow
 
 from simulation.solve import (
     ProjectileResult,
@@ -25,7 +24,7 @@ from simulation.solve import (
 )
 
 from config.user_settings import load_user_settings, save_user_settings
-from config.app_settings import ThemeName, load_theme, save_theme
+from config.app_settings import ThemeName, is_theme_name, load_theme, save_theme
 from config.theme import get_stylesheet
 from storage.csv_export import export_simulation_results_to_csv
 
@@ -50,7 +49,10 @@ class MainWindow(QMainWindow):
         self.current_parameters = load_user_settings()
         self.current_theme: ThemeName = load_theme()
 
-        self.parameter_panel = ParameterPanel(self.current_parameters)
+        self.parameter_panel = ParameterPanel(
+            self.current_parameters,
+            self.current_theme,
+        )
 
         self.trajectory_canvas = PlotCanvas(
             title="Trajectory comparison",
@@ -87,7 +89,13 @@ class MainWindow(QMainWindow):
         self.parameter_panel.export_animation_button.clicked.connect(
             self.export_animation
         )
-        self.parameter_panel.settings_button.clicked.connect(self.open_settings)
+        self.parameter_panel.theme_input.currentTextChanged.connect(self.change_theme)
+        self.parameter_panel.open_plots_folder_button.clicked.connect(
+            self.open_plots_folder
+        )
+        self.parameter_panel.open_animations_folder_button.clicked.connect(
+            self.open_animations_folder
+        )
 
         main_layout.addWidget(self.parameter_panel)
         main_layout.addWidget(self.tabs, 1)
@@ -228,7 +236,11 @@ class MainWindow(QMainWindow):
         QMessageBox.information(
             self,
             "Export complete",
-            "Plots saved to results/plots/.",
+            (
+                "Plots saved to results/plots/.\n\n"
+                "You can open this folder using the 'Open plots folder' button "
+                "in the left panel."
+            ),
         )
 
     def export_animation(self) -> None:
@@ -257,35 +269,12 @@ class MainWindow(QMainWindow):
         QMessageBox.information(
             self,
             "Export complete",
-            "Animation saved to results/animations/projectile_motion.gif.",
+            (
+                "Animation saved to results/animations/projectile_motion.gif.\n\n"
+                "You can open this folder using the 'Open GIF folder' button "
+                "in the left panel."
+            ),
         )
-
-    def open_settings(self) -> None:
-        current_parameters = self.parameter_panel.get_parameters()
-
-        settings_window = SettingsWindow(
-            current_parameters,
-            self.current_theme,
-        )
-
-        if settings_window.exec() == QDialog.DialogCode.Accepted:
-            updated_parameters = settings_window.get_updated_parameters(
-                current_parameters
-            )
-            selected_theme = settings_window.get_selected_theme()
-
-            self.current_parameters = updated_parameters
-            self.current_theme = selected_theme
-
-            self.parameter_panel.set_parameters(updated_parameters)
-
-            save_user_settings(updated_parameters)
-            save_theme(selected_theme)
-
-            application = QApplication.instance()
-
-            if isinstance(application, QApplication):
-                application.setStyleSheet(get_stylesheet(selected_theme))
 
     def closeEvent(self, event: QCloseEvent) -> None:
         parameters = self.parameter_panel.get_parameters()
