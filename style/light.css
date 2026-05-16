@@ -26,13 +26,13 @@ QDoubleSpinBox::down-button:hover {
 }
 
 QDoubleSpinBox::up-arrow {
-	image: url(style/icons/arrow-up-dark.svg);
+	image: url(style/icons/arrow_up_dark.svg);
 	width: 10px;
 	height: 10px;
 }
 
 QDoubleSpinBox::down-arrow {
-	image: url(style/icons/arrow-down-dark.svg);
+	image: url(style/icons/arrow_down_dark.svg);
 	width: 10px;
 	height: 10px;
 }
