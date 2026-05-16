@@ -1,27 +1,41 @@
+from pathlib import Path
+
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
     QFormLayout,
     QLabel,
+    QPushButton,
     QVBoxLayout,
 )
 
+from config.app_settings import ThemeName, is_theme_name
 from config.parameters import Parameters
 
 
 class SettingsWindow(QDialog):
-    def __init__(self, parameters: Parameters) -> None:
+    def __init__(self, parameters: Parameters, theme: ThemeName) -> None:
         super().__init__()
 
         self.setWindowTitle("Settings")
-        self.resize(420, 320)
+        self.resize(420, 360)
 
         main_layout = QVBoxLayout()
         form_layout = QFormLayout()
 
-        self.title_label = QLabel("Simulation constants")
+        self.title_label = QLabel("Settings panel")
         self.title_label.setProperty("class", "h1")
+
+        self.theme_input = QComboBox()
+        self.theme_input.addItems(["light", "dark"])
+        self.theme_input.setCurrentText(theme)
+
+        self.open_image_folder_button = QPushButton("Open image folder")
+        self.open_image_folder_button.clicked.connect(self.open_image_folder)
 
         self.gravity_input = QDoubleSpinBox()
         self.gravity_input.setRange(0.1, 100.0)
@@ -70,6 +84,8 @@ class SettingsWindow(QDialog):
         self.dt_input.setDecimals(4)
         self.dt_input.setSuffix(" s")
 
+        form_layout.addRow(QLabel("Theme:"), self.theme_input)
+        form_layout.addRow(self.open_image_folder_button)
         form_layout.addRow(QLabel("Gravity (<b>g</b>):"), self.gravity_input)
         form_layout.addRow(QLabel("Air density (<b>ρ</b>):"), self.air_density_input)
         form_layout.addRow(
@@ -96,6 +112,20 @@ class SettingsWindow(QDialog):
         main_layout.addWidget(self.button_box)
 
         self.setLayout(main_layout)
+
+    def get_selected_theme(self) -> ThemeName:
+        selected_theme = self.theme_input.currentText()
+
+        if is_theme_name(selected_theme):
+            return selected_theme
+
+        return "light"
+
+    def open_image_folder(self) -> None:
+        image_directory = Path(__file__).resolve().parents[1] / "results" / "plots"
+        image_directory.mkdir(parents=True, exist_ok=True)
+
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(image_directory)))
 
     def get_updated_parameters(self, current_parameters: Parameters) -> Parameters:
         return Parameters(

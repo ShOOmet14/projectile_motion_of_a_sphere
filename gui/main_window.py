@@ -1,12 +1,13 @@
 from pathlib import Path
 
 from PySide6.QtWidgets import (
+    QApplication,
+    QDialog,
     QHBoxLayout,
     QMainWindow,
     QMessageBox,
     QTabWidget,
     QWidget,
-    QDialog,
 )
 from PySide6.QtGui import QCloseEvent
 
@@ -24,7 +25,7 @@ from simulation.solve import (
 )
 
 from config.user_settings import load_user_settings, save_user_settings
-from config.app_settings import load_theme, save_theme
+from config.app_settings import ThemeName, load_theme, save_theme
 from config.theme import get_stylesheet
 from storage.csv_export import export_simulation_results_to_csv
 
@@ -47,6 +48,8 @@ class MainWindow(QMainWindow):
         main_layout = QHBoxLayout()
 
         self.current_parameters = load_user_settings()
+        self.current_theme: ThemeName = load_theme()
+
         self.parameter_panel = ParameterPanel(self.current_parameters)
 
         self.trajectory_canvas = PlotCanvas(
@@ -260,16 +263,29 @@ class MainWindow(QMainWindow):
     def open_settings(self) -> None:
         current_parameters = self.parameter_panel.get_parameters()
 
-        settings_window = SettingsWindow(current_parameters)
+        settings_window = SettingsWindow(
+            current_parameters,
+            self.current_theme,
+        )
 
         if settings_window.exec() == QDialog.DialogCode.Accepted:
             updated_parameters = settings_window.get_updated_parameters(
                 current_parameters
             )
+            selected_theme = settings_window.get_selected_theme()
 
             self.current_parameters = updated_parameters
+            self.current_theme = selected_theme
+
             self.parameter_panel.set_parameters(updated_parameters)
+
             save_user_settings(updated_parameters)
+            save_theme(selected_theme)
+
+            application = QApplication.instance()
+
+            if isinstance(application, QApplication):
+                application.setStyleSheet(get_stylesheet(selected_theme))
 
     def closeEvent(self, event: QCloseEvent) -> None:
         parameters = self.parameter_panel.get_parameters()

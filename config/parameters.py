@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from math import cos, pi, sin, isfinite
 
-MAX_SIMULATION_STEPS = 1_000_000
+MAX_SIMULATION_STEPS: int = 1_000_000
 
 
 @dataclass(frozen=True)
