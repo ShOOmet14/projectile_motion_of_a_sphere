@@ -7,22 +7,6 @@ from config.parameters import DEFAULT_PARAMETERS, Parameters
 ProjectileResult = dict[str, npt.NDArray[np.float64]]
 
 
-def calculate_position_linear_drag(
-    time: npt.NDArray[np.float64],
-    x0: float,
-    y0: float,
-    vx0: float,
-    vy0: float,
-    k: float,
-    g: float,
-) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-    position_x = x0 + vx0 * (1.0 - np.exp(-k * time)) / k
-
-    position_y = y0 + (vy0 + g / k) * (1.0 - np.exp(-k * time)) / k - g * time / k
-
-    return position_x, position_y
-
-
 def calculate_position_no_drag(
     time: npt.NDArray[np.float64],
     x0: float,
@@ -49,15 +33,40 @@ def calculate_velocity_no_drag(
     return velocity_x, velocity_y
 
 
+def calculate_position_linear_drag(
+    time: npt.NDArray[np.float64],
+    x0: float,
+    y0: float,
+    vx0: float,
+    vy0: float,
+    k: float,
+    g: float,
+    wind_vx: float,
+    wind_vy: float,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    position_x = x0 + wind_vx * time + (vx0 - wind_vx) * (1.0 - np.exp(-k * time)) / k
+
+    position_y = (
+        y0
+        + (wind_vy - g / k) * time
+        + (vy0 - wind_vy + g / k) * (1.0 - np.exp(-k * time)) / k
+    )
+
+    return position_x, position_y
+
+
 def calculate_velocity_linear_drag(
     time: npt.NDArray[np.float64],
     vx0: float,
     vy0: float,
     k: float,
     g: float,
+    wind_vx: float,
+    wind_vy: float,
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-    velocity_x = vx0 * np.exp(-k * time)
-    velocity_y = (vy0 + g / k) * np.exp(-k * time) - g / k
+    velocity_x = wind_vx + (vx0 - wind_vx) * np.exp(-k * time)
+
+    velocity_y = wind_vy - g / k + (vy0 - wind_vy + g / k) * np.exp(-k * time)
 
     return velocity_x, velocity_y
 
@@ -66,13 +75,17 @@ def calculate_state_quadratic_drag(
     state: npt.NDArray[np.float64],
     q: float,
     g: float,
+    wind_vx: float,
+    wind_vy: float,
 ) -> npt.NDArray[np.float64]:
     _, _, vx, vy = state
 
-    v = np.hypot(vx, vy)
+    relative_vx = vx - wind_vx
+    relative_vy = vy - wind_vy
+    relative_speed = np.hypot(relative_vx, relative_vy)
 
-    ax = -q * v * vx
-    ay = -g - q * v * vy
+    ax = -q * relative_speed * relative_vx
+    ay = -g - q * relative_speed * relative_vy
 
     return np.array([vx, vy, ax, ay], dtype=np.float64)
 
@@ -82,11 +95,31 @@ def runge_kutta_method(
     dt: float,
     q: float,
     g: float,
+    wind_vx: float,
+    wind_vy: float,
 ) -> npt.NDArray[np.float64]:
-    k1 = calculate_state_quadratic_drag(state_old, q, g)
-    k2 = calculate_state_quadratic_drag(state_old + dt * k1 / 2.0, q, g)
-    k3 = calculate_state_quadratic_drag(state_old + dt * k2 / 2.0, q, g)
-    k4 = calculate_state_quadratic_drag(state_old + dt * k3, q, g)
+    k1 = calculate_state_quadratic_drag(state_old, q, g, wind_vx, wind_vy)
+    k2 = calculate_state_quadratic_drag(
+        state_old + dt * k1 / 2.0,
+        q,
+        g,
+        wind_vx,
+        wind_vy,
+    )
+    k3 = calculate_state_quadratic_drag(
+        state_old + dt * k2 / 2.0,
+        q,
+        g,
+        wind_vx,
+        wind_vy,
+    )
+    k4 = calculate_state_quadratic_drag(
+        state_old + dt * k3,
+        q,
+        g,
+        wind_vx,
+        wind_vy,
+    )
 
     state_new = state_old + dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
 
@@ -237,6 +270,8 @@ def solve_projectile_motion_linear_drag(
         parameters.vy0,
         parameters.k,
         parameters.g,
+        parameters.wind_vx,
+        parameters.wind_vy,
     )
 
     vx, vy = calculate_velocity_linear_drag(
@@ -245,6 +280,8 @@ def solve_projectile_motion_linear_drag(
         parameters.vy0,
         parameters.k,
         parameters.g,
+        parameters.wind_vx,
+        parameters.wind_vy,
     )
 
     negative_indices = np.where(y < 0)[0]
@@ -328,6 +365,8 @@ def solve_projectile_motion_quadratic_drag(
             parameters.dt,
             parameters.q,
             parameters.g,
+            parameters.wind_vx,
+            parameters.wind_vy,
         )
 
         time_quadratic.append(time_quadratic[-1] + parameters.dt)

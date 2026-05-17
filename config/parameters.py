@@ -20,6 +20,9 @@ class Parameters:
     t_max: float = 10.0
     g: float = 9.80665
 
+    wind_speed: float = 0.0
+    wind_angle_deg: float = 0.0
+
     x0: float = 0.0
     y0: float = 0.0
 
@@ -35,6 +38,8 @@ class Parameters:
             "dt",
             "t_max",
             "g",
+            "wind_speed",
+            "wind_angle_deg",
             "x0",
             "y0",
         ):
@@ -75,6 +80,12 @@ class Parameters:
         if self.g <= 0:
             raise ValueError("Gravity g must be greater than zero.")
 
+        if self.wind_speed < 0:
+            raise ValueError("Wind speed must be greater than or equal to zero.")
+
+        if not 0 <= self.wind_angle_deg <= 360:
+            raise ValueError("Wind angle must be between 0 and 360 degrees.")
+
         if self.t_max / self.dt > MAX_SIMULATION_STEPS:
             raise ValueError(
                 "Too many simulation steps. Increase dt or decrease t_max."
@@ -103,6 +114,18 @@ class Parameters:
     @property
     def q(self) -> float:
         return self.rho * self.cd * self.area / (2.0 * self.mass)
+
+    @property
+    def wind_angle_rad(self) -> float:
+        return self.wind_angle_deg * pi / 180.0
+
+    @property
+    def wind_vx(self) -> float:
+        return self.wind_speed * cos(self.wind_angle_rad)
+
+    @property
+    def wind_vy(self) -> float:
+        return self.wind_speed * sin(self.wind_angle_rad)
 
 
 DEFAULT_PARAMETERS = Parameters()

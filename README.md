@@ -1,20 +1,137 @@
 # To do
 
-1. refractoring and fixing of the code, join similar files, make the project have as little files as it needs. if ok don't change anything
-2. make nice looking windows using styling in css
-3. take wind into consideration
-4. add vectors on plots for wind (an arrow which points in wind direction)
-5. add possibility to change wind strength and angle
-6. add vectors show vectors option inside settings part of parameters, as checkbox, if enabled it will show vectors for wind (on plots and video playback) and velocity (on video playback) so we can see how force changes during flight.
-7. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
-8. make good readme
+1. take wind into consideration
+2. add vectors on plots for wind (an arrow which points in wind direction)
+3. add possibility to change wind strength and angle
+4. add vectors show vectors option inside settings part of parameters, as checkbox, if enabled it will show vectors for wind (on plots and video playback) and velocity (on video playback) so we can see how force changes during flight.
+5. update readme after adding wind
+6. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
 
-CSV contains interpolated point for ground hit.
+# Projectile Motion Simulator
 
-## Example images:
+A desktop application for simulating and comparing projectile motion models.
 
-![Trajectory plot](docs/readme-assets/plots/trajectory_comparison.png)
-![Energy plot](docs/readme-assets/plots/energy_comparison.png)
-![Speed plot](docs/readme-assets/plots/speed_comparison.png)
+This project was a learning experiment for me and a challenging step in understanding both GUI development and physics simulation. The app allows the user to change physical parameters, run the simulation, visualize results, and export generated data, plots, and animation.
 
-![Projectile animation](docs/readme-assets/animation/projectile_motion.gif)
+## Features
+
+- Simulation of projectile motion with three models: no air resistance, linear drag, and quadratic drag using Runge-Kutta numerical integration.
+- Interactive parameter panel with input validation for physically incorrect values.
+- Validation is handled both in the GUI and in the parameter dataclass model, so invalid values cannot be used even if they are loaded from saved settings.
+- Light and dark theme.
+- Styled GUI using Qt CSS.
+- Multiple result tabs: trajectory plot, energy plot, speed plot, playback animation, text results.
+- Export options for: CSV files, plots, and GIF animation.
+- Buttons for opening exported plots and animations directories.
+- User settings and app settings are saved to JSON files.
+
+## Preview
+
+### Main window with light theme and trajectory plot
+
+![Main window](docs/readme-assets/app_1.png)
+
+### Dark theme with animation panel
+
+![Animation panel](docs/readme-assets//app_2.png)
+
+### Exported GIF animation
+
+![Exported animation](docs/readme-assets/projectile_motion.gif)
+
+## Physics stuff
+
+If you are interested in the physics part, take a look at the PDF file inside the `docs/` folder. It contains the equations and explanations of how the simulation works, based on my current understanding of the topic.
+
+## Project structure
+
+- `config/` contains application parameters and settings logic.
+- `gui/` contains the GUI code made with PySide6.
+- `simulation/` contains the physics simulation logic.
+- `storage/` contains helper functions for exporting CSV files.
+- `visualization/` contains functions for exporting plots and animation.
+- `style/` contains Qt CSS files and icons.
+- `docs/` contains README images and the physics explanation PDF.
+- `main.py` is the main file used to run the application.
+- `requirements.txt` contains the libraries used in the project.
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd <project-folder>
+```
+
+Replace `<repository-url>` with your GitHub repository URL and `<project-folder>` with the folder created after cloning.
+
+### 2. Create a virtual environment
+
+#### Windows
+
+```bash
+python -m venv venv
+```
+
+#### macOS / Linux
+
+```bash
+python3 -m venv venv
+```
+
+### 3. Activate the virtual environment
+
+#### Windows PowerShell
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+#### Windows Command Prompt
+
+```cmd
+venv\Scripts\activate.bat
+```
+
+#### macOS / Linux
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Install dependencies
+
+#### Windows
+
+```bash
+pip install -r requirements.txt
+```
+
+#### macOS / Linux
+
+```bash
+pip3 install -r requirements.txt
+```
+
+### 5. Run the application
+
+#### Windows
+
+```bash
+python main.py
+```
+
+#### macOS / Linux
+
+```bash
+python3 main.py
+```
+
+### 6. Deactivate the virtual environment
+
+After closing the app, you can deactivate the virtual environment with:
+
+```bash
+deactivate
+```

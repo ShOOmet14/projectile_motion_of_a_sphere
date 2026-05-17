@@ -1,9 +1,12 @@
+from math import cos, sin, pi
+
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from simulation.solve import ProjectileResult
+from config.parameters import Parameters
 
 
 class PlotCanvas(QWidget):
@@ -52,6 +55,8 @@ class PlotCanvas(QWidget):
         no_drag: ProjectileResult,
         linear_drag: ProjectileResult,
         quadratic_drag: ProjectileResult,
+        parameters: Parameters,
+        show_vectors: bool,
     ) -> None:
         self.axis.clear()
 
@@ -75,6 +80,9 @@ class PlotCanvas(QWidget):
             label="Quadratic drag RK4",
             color="green",
         )
+
+        if show_vectors:
+            self.draw_wind_vector(parameters)
 
         self.finish_plot()
 
@@ -139,3 +147,41 @@ class PlotCanvas(QWidget):
         )
 
         self.finish_plot()
+
+    def draw_wind_vector(self, parameters: Parameters) -> None:
+        if parameters.wind_speed <= 0:
+            return
+
+        angle_rad = parameters.wind_angle_deg * pi / 180.0
+
+        start_x = 0.08
+        start_y = 0.88
+        length = 0.12
+
+        dx = length * cos(angle_rad)
+        dy = length * sin(angle_rad)
+
+        self.axis.annotate(
+            "",
+            xy=(start_x + dx, start_y + dy),
+            xytext=(start_x, start_y),
+            xycoords="axes fraction",
+            arrowprops={
+                "arrowstyle": "->",
+                "linewidth": 2.5,
+                "color": "black",
+            },
+        )
+
+        self.axis.text(
+            start_x,
+            start_y - 0.07,
+            f"Wind: {parameters.wind_speed:.1f} m/s, {parameters.wind_angle_deg:.0f}°",
+            transform=self.axis.transAxes,
+            fontsize=9,
+            bbox={
+                "facecolor": "white",
+                "alpha": 0.75,
+                "edgecolor": "none",
+            },
+        )

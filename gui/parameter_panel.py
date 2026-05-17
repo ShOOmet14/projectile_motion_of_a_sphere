@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QWidget,
+    QCheckBox,
 )
 
 from config.parameters import DEFAULT_PARAMETERS, Parameters
@@ -17,7 +18,8 @@ class ParameterPanel(QWidget):
     ) -> None:
         super().__init__()
 
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(430)
+        self.setObjectName("parameterPanel")
 
         layout = QFormLayout()
 
@@ -92,10 +94,32 @@ class ParameterPanel(QWidget):
         self.gravity_input.setDecimals(5)
         self.gravity_input.setSuffix(" m/s²")
 
+        self.wind_speed_input = QDoubleSpinBox()
+        self.wind_speed_input.setRange(0.0, 200.0)
+        self.wind_speed_input.setValue(parameters.wind_speed)
+        self.wind_speed_input.setSingleStep(1.0)
+        self.wind_speed_input.setDecimals(2)
+        self.wind_speed_input.setSuffix(" m/s")
+
+        self.wind_angle_input = QDoubleSpinBox()
+        self.wind_angle_input.setRange(0.0, 360.0)
+        self.wind_angle_input.setValue(parameters.wind_angle_deg)
+        self.wind_angle_input.setSingleStep(5.0)
+        self.wind_angle_input.setDecimals(1)
+        self.wind_angle_input.setSuffix(" °")
+        self.wind_angle_input.setWrapping(True)
+
         self.run_simulation_button = QPushButton("Run simulation")
+        self.run_simulation_button.setObjectName("primaryButton")
+
         self.export_csv_button = QPushButton("Export CSV")
+        self.export_csv_button.setObjectName("secondaryButton")
+
         self.export_plots_button = QPushButton("Export plots")
+        self.export_plots_button.setObjectName("secondaryButton")
+
         self.export_animation_button = QPushButton("Export animation")
+        self.export_animation_button.setObjectName("secondaryButton")
 
         self.settings_label = QLabel("Settings")
         self.settings_label.setProperty("class", "h1")
@@ -104,8 +128,14 @@ class ParameterPanel(QWidget):
         self.theme_input.addItems(["light", "dark"])
         self.theme_input.setCurrentText(theme)
 
+        self.show_vectors_checkbox = QCheckBox("Show wind and velocity vectors")
+        self.show_vectors_checkbox.setChecked(True)
+
         self.open_plots_folder_button = QPushButton("Open plots folder")
+        self.open_plots_folder_button.setObjectName("folderButton")
+
         self.open_animations_folder_button = QPushButton("Open GIF folder")
+        self.open_animations_folder_button.setObjectName("folderButton")
 
         layout.addRow(self.parameters_label)
         layout.addRow(QLabel("Initial speed (<b>v0</b>):"), self.velocity_input)
@@ -124,6 +154,8 @@ class ParameterPanel(QWidget):
         layout.addRow(QLabel("Time step (<b>dt</b>):"), self.dt_input)
         layout.addRow(QLabel("Max time (<b>Tmax</b>):"), self.t_max_input)
         layout.addRow(QLabel("Gravity (<b>g</b>):"), self.gravity_input)
+        layout.addRow(QLabel("Wind speed:"), self.wind_speed_input)
+        layout.addRow(QLabel("Wind angle:"), self.wind_angle_input)
         layout.addRow(self.run_simulation_button)
         layout.addRow(self.export_csv_button)
         layout.addRow(self.export_plots_button)
@@ -131,6 +163,8 @@ class ParameterPanel(QWidget):
 
         layout.addRow(self.settings_label)
         layout.addRow(QLabel("Theme:"), self.theme_input)
+        layout.addRow(self.show_vectors_checkbox)
+
         layout.addRow(self.open_plots_folder_button)
         layout.addRow(self.open_animations_folder_button)
 
@@ -148,6 +182,8 @@ class ParameterPanel(QWidget):
             dt=self.dt_input.value(),
             t_max=self.t_max_input.value(),
             g=self.gravity_input.value(),
+            wind_speed=self.wind_speed_input.value(),
+            wind_angle_deg=self.wind_angle_input.value(),
         )
 
     def set_parameters(self, parameters: Parameters) -> None:
@@ -161,3 +197,8 @@ class ParameterPanel(QWidget):
         self.dt_input.setValue(parameters.dt)
         self.t_max_input.setValue(parameters.t_max)
         self.gravity_input.setValue(parameters.g)
+        self.wind_speed_input.setValue(parameters.wind_speed)
+        self.wind_angle_input.setValue(parameters.wind_angle_deg)
+
+    def should_show_vectors(self) -> bool:
+        return self.show_vectors_checkbox.isChecked()

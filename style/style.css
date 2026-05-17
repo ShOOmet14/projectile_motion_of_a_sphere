@@ -1,34 +1,129 @@
 QWidget {
+	font-family: "Segoe UI", "Arial", sans-serif;
 	font-size: 14px;
 }
 
-QPushButton {
-	padding: 6px 10px;
-	border-radius: 4px;
+QWidget#mainContainer {
+	padding: 10px;
 }
 
-QComboBox {
-	padding: 4px;
+QWidget#parameterPanel {
+	border-radius: 14px;
+	padding: 14px;
 }
 
 QLabel[class="h1"] {
 	font-size: 20px;
-	font-weight: bold;
-	padding-bottom: 6px;
+	font-weight: 700;
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
+QPushButton {
+	min-height: 32px;
+	padding: 7px 12px;
+	border-radius: 8px;
+	font-weight: 600;
+}
+
+QPushButton#primaryButton {
+	min-height: 38px;
+	font-size: 15px;
+	font-weight: 700;
+}
+
+QPushButton#secondaryButton,
+QPushButton#folderButton {
+	min-height: 34px;
 }
 
 QDoubleSpinBox {
-	padding-right: 24px;
+	max-height: 34px;
+	padding-left: 8px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-right: 70px;
+	border-radius: 8px;
+}
+
+QDoubleSpinBox::down-button {
+	subcontrol-origin: border;
+	subcontrol-position: top right;
+	position: absolute;
+	top: 1px;
+	right: 31px;
+	width: 30px;
+	height: 30px;
 }
 
 QDoubleSpinBox::up-button {
 	subcontrol-origin: border;
 	subcontrol-position: top right;
-	width: 22px;
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	width: 30px;
+	height: 30px;
+	border-top-right-radius: 7px;
+	border-bottom-right-radius: 7px;
 }
 
-QDoubleSpinBox::down-button {
+QDoubleSpinBox::up-arrow,
+QDoubleSpinBox::down-arrow {
+	width: 10px;
+	height: 10px;
+}
+
+QComboBox {
+	min-height: 34px;
+	padding-left: 8px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-right: 34px;
+	border-radius: 8px;
+}
+
+QComboBox::drop-down {
 	subcontrol-origin: border;
-	subcontrol-position: bottom right;
-	width: 22px;
+	subcontrol-position: top right;
+	width: 30px;
+	border-top-right-radius: 7px;
+	border-bottom-right-radius: 7px;
+}
+
+QComboBox::down-arrow {
+	width: 10px;
+	height: 10px;
+}
+
+QTabWidget::pane {
+	padding: 8px;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 14px;
+	border-bottom-left-radius: 14px;
+	border-bottom-right-radius: 14px;
+}
+
+QTabBar::tab {
+	min-width: 100px;
+	padding: 9px 16px;
+	margin-right: 4px;
+	border-top-left-radius: 9px;
+	border-top-right-radius: 9px;
+	font-weight: 600;
+}
+
+QPlainTextEdit {
+	border-radius: 10px;
+	padding: 10px;
+	font-family: "Consolas", "Courier New", monospace;
+	font-size: 13px;
+}
+
+QMessageBox {
+	min-width: 420px;
+}
+
+QMessageBox QPushButton {
+	min-width: 90px;
 }

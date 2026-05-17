@@ -54,6 +54,8 @@ class MainWindow(QMainWindow):
         self.quadratic_drag_result: ProjectileResult | None = None
 
         central_widget = QWidget()
+        central_widget.setObjectName("mainContainer")
+
         main_layout = QHBoxLayout()
 
         self.current_parameters = load_user_settings()
@@ -87,10 +89,11 @@ class MainWindow(QMainWindow):
         self.results_panel = ResultsPanel()
 
         self.tabs = QTabWidget()
+        self.tabs.setObjectName("mainTabs")
         self.tabs.addTab(self.trajectory_canvas, "Trajectory")
-        self.tabs.addTab(self.animation_canvas, "Playback")
         self.tabs.addTab(self.energy_canvas, "Energy")
         self.tabs.addTab(self.speed_canvas, "Speed")
+        self.tabs.addTab(self.animation_canvas, "Playback")
         self.tabs.addTab(self.results_panel, "Results")
 
         self.parameter_panel.run_simulation_button.clicked.connect(self.run_simulation)
@@ -116,6 +119,8 @@ class MainWindow(QMainWindow):
     def run_simulation(self) -> None:
         try:
             parameters = self.parameter_panel.get_parameters()
+            show_vectors = self.parameter_panel.should_show_vectors()
+
             self.current_parameters = parameters
             save_user_settings(parameters)
 
@@ -131,12 +136,16 @@ class MainWindow(QMainWindow):
                 no_drag,
                 linear_drag,
                 quadratic_drag,
+                parameters,
+                show_vectors,
             )
 
             self.animation_canvas.set_results(
                 no_drag,
                 linear_drag,
                 quadratic_drag,
+                parameters,
+                show_vectors,
             )
 
             self.energy_canvas.plot_energy_comparison(
@@ -213,6 +222,9 @@ class MainWindow(QMainWindow):
         plots_directory = Path("results") / "plots"
         plots_directory.mkdir(parents=True, exist_ok=True)
 
+        parameters = self.parameter_panel.get_parameters()
+        show_vectors = self.parameter_panel.should_show_vectors()
+
         plot_motion(
             self.no_drag_result["x"],
             self.no_drag_result["y"],
@@ -220,7 +232,9 @@ class MainWindow(QMainWindow):
             self.linear_drag_result["y"],
             self.quadratic_drag_result["x"],
             self.quadratic_drag_result["y"],
-            plots_directory / "trajectory_comparison.png",
+            parameters,
+            show_vectors,
+            plots_directory / "trajectory_plot.png",
         )
 
         plot_energy(
@@ -269,10 +283,15 @@ class MainWindow(QMainWindow):
         animations_directory = Path("results") / "animations"
         animations_directory.mkdir(parents=True, exist_ok=True)
 
+        parameters = self.parameter_panel.get_parameters()
+        show_vectors = self.parameter_panel.should_show_vectors()
+
         animate_projectile_motion(
             self.no_drag_result,
             self.linear_drag_result,
             self.quadratic_drag_result,
+            parameters,
+            show_vectors,
             animations_directory / "projectile_motion.gif",
         )
 

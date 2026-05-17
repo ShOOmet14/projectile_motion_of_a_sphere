@@ -12,6 +12,7 @@ class ResultsPanel(QWidget):
         layout = QVBoxLayout()
 
         self.title_label = QLabel("Results")
+        self.title_label.setProperty("class", "h1")
 
         self.results_text = QPlainTextEdit()
         self.results_text.setReadOnly(True)

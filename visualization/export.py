@@ -1,14 +1,18 @@
+from math import cos, pi, sin
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-import matplotlib.pyplot as plt
 
 from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from matplotlib.patches import FancyArrowPatch
 from matplotlib.text import Text
+from matplotlib.axes import Axes
 
+from config.parameters import Parameters
 from simulation.solve import ProjectileResult
 
 
@@ -23,6 +27,45 @@ def save_plot(figure: Figure, save_path: str | Path) -> None:
     plt.close(figure)
 
 
+def draw_wind_vector_on_axis(axis: Axes, parameters: Parameters) -> None:
+    if parameters.wind_speed <= 0:
+        return
+
+    angle_rad = parameters.wind_angle_deg * pi / 180.0
+
+    start_x = 0.78
+    start_y = 0.88
+    length = 0.12
+
+    dx = length * cos(angle_rad)
+    dy = length * sin(angle_rad)
+
+    axis.annotate(
+        "",
+        xy=(start_x + dx, start_y + dy),
+        xytext=(start_x, start_y),
+        xycoords="axes fraction",
+        arrowprops={
+            "arrowstyle": "->",
+            "linewidth": 2.5,
+            "color": "black",
+        },
+    )
+
+    axis.text(
+        start_x,
+        start_y - 0.07,
+        (f"Wind: {parameters.wind_speed:.1f} m/s, {parameters.wind_angle_deg:.0f}°"),
+        transform=axis.transAxes,
+        fontsize=9,
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.75,
+            "edgecolor": "none",
+        },
+    )
+
+
 def plot_motion(
     x_no_drag: npt.NDArray[np.float64],
     y_no_drag: npt.NDArray[np.float64],
@@ -30,6 +73,8 @@ def plot_motion(
     y_linear: npt.NDArray[np.float64],
     x_quadratic: npt.NDArray[np.float64],
     y_quadratic: npt.NDArray[np.float64],
+    parameters: Parameters,
+    show_vectors: bool,
     save_path: str | Path,
 ) -> None:
     figure, axis = plt.subplots()
@@ -46,6 +91,9 @@ def plot_motion(
     axis.set_title("Trajectory comparison")
     axis.set_xlabel("x [m]")
     axis.set_ylabel("y [m]")
+
+    if show_vectors:
+        draw_wind_vector_on_axis(axis, parameters)
 
     axis.legend()
     axis.grid(True)
@@ -147,35 +195,101 @@ def get_interpolated_positions(
     return x, y
 
 
-def get_max_axis_values(
+def get_interpolated_velocities(
+    result: ProjectileResult,
+    animation_time: npt.NDArray[np.float64],
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    vx = np.interp(animation_time, result["t"], result["vx"])
+    vy = np.interp(animation_time, result["t"], result["vy"])
+
+    return vx, vy
+
+
+def get_axis_limits(
     no_drag: ProjectileResult,
     linear_drag: ProjectileResult,
     quadratic_drag: ProjectileResult,
-) -> tuple[float, float]:
+) -> tuple[float, float, float, float]:
+    min_x = min(
+        float(np.min(no_drag["x"])),
+        float(np.min(linear_drag["x"])),
+        float(np.min(quadratic_drag["x"])),
+    )
+
     max_x = max(
         float(np.max(no_drag["x"])),
         float(np.max(linear_drag["x"])),
         float(np.max(quadratic_drag["x"])),
     )
 
+    min_y = min(
+        float(np.min(no_drag["y"])),
+        float(np.min(linear_drag["y"])),
+        float(np.min(quadratic_drag["y"])),
+        0.0,
+    )
+
     max_y = max(
         float(np.max(no_drag["y"])),
         float(np.max(linear_drag["y"])),
         float(np.max(quadratic_drag["y"])),
+        1.0,
     )
 
-    return max_x, max_y
+    x_range = max(max_x - min_x, 1.0)
+    y_range = max(max_y - min_y, 1.0)
+
+    x_margin = x_range * 0.06
+    y_margin = y_range * 0.10
+
+    return (
+        min_x - x_margin,
+        max_x + x_margin,
+        min_y - y_margin,
+        max_y + y_margin,
+    )
+
+
+def get_velocity_scale(
+    no_drag: ProjectileResult,
+    linear_drag: ProjectileResult,
+    quadratic_drag: ProjectileResult,
+) -> float:
+    x_min, x_max, _, _ = get_axis_limits(
+        no_drag,
+        linear_drag,
+        quadratic_drag,
+    )
+
+    x_range = max(x_max - x_min, 1.0)
+
+    max_speed = max(
+        float(np.max(no_drag["v"])),
+        float(np.max(linear_drag["v"])),
+        float(np.max(quadratic_drag["v"])),
+        1.0,
+    )
+
+    return 0.08 * x_range / max_speed
 
 
 def animate_projectile_motion(
     no_drag: ProjectileResult,
     linear_drag: ProjectileResult,
     quadratic_drag: ProjectileResult,
+    parameters: Parameters,
+    show_vectors: bool,
     save_path: str | Path,
 ) -> None:
+    animation_end_time = max(
+        float(no_drag["t"][-1]),
+        float(linear_drag["t"][-1]),
+        float(quadratic_drag["t"][-1]),
+    )
+
     animation_time: npt.NDArray[np.float64] = np.linspace(
         0.0,
-        float(no_drag["t"][-1]),
+        animation_end_time,
         GIF_FRAMES,
         dtype=np.float64,
     )
@@ -190,7 +304,23 @@ def animate_projectile_motion(
         animation_time,
     )
 
-    max_x, max_y = get_max_axis_values(
+    no_drag_vx, no_drag_vy = get_interpolated_velocities(no_drag, animation_time)
+    linear_drag_vx, linear_drag_vy = get_interpolated_velocities(
+        linear_drag,
+        animation_time,
+    )
+    quadratic_drag_vx, quadratic_drag_vy = get_interpolated_velocities(
+        quadratic_drag,
+        animation_time,
+    )
+
+    x_min, x_max, y_min, y_max = get_axis_limits(
+        no_drag,
+        linear_drag,
+        quadratic_drag,
+    )
+
+    velocity_scale = get_velocity_scale(
         no_drag,
         linear_drag,
         quadratic_drag,
@@ -271,33 +401,168 @@ def animate_projectile_motion(
         },
     )
 
+    velocity_text: Text | None = None
+    wind_arrow: FancyArrowPatch | None = None
+    velocity_arrows: dict[str, FancyArrowPatch] = {}
+
     axis.set_title("Projectile motion animation")
     axis.set_xlabel("x [m]")
     axis.set_ylabel("y [m]")
-    axis.set_xlim(0.0, max_x * 1.05)
-    axis.set_ylim(0.0, max_y * 1.10)
+    axis.set_xlim(x_min, x_max)
+    axis.set_ylim(y_min, y_max)
     axis.legend(loc="upper right")
     axis.grid(True, alpha=0.35)
+
+    if show_vectors:
+        if parameters.wind_speed > 0:
+            angle_rad = parameters.wind_angle_deg * pi / 180.0
+
+            start_x = 0.78
+            start_y = 0.88
+            length = 0.12
+
+            dx = length * cos(angle_rad)
+            dy = length * sin(angle_rad)
+
+            wind_arrow = FancyArrowPatch(
+                (start_x, start_y),
+                (start_x + dx, start_y + dy),
+                transform=axis.transAxes,
+                arrowstyle="->",
+                mutation_scale=16,
+                linewidth=2.5,
+                color="black",
+            )
+
+            axis.add_patch(wind_arrow)
+
+            axis.text(
+                start_x,
+                start_y - 0.07,
+                (
+                    f"Wind: {parameters.wind_speed:.1f} m/s, "
+                    f"{parameters.wind_angle_deg:.0f}°"
+                ),
+                transform=axis.transAxes,
+                fontsize=9,
+                bbox={
+                    "facecolor": "white",
+                    "alpha": 0.75,
+                    "edgecolor": "none",
+                },
+            )
+
+        arrow_data = {
+            "no_drag": "red",
+            "linear_drag": "blue",
+            "quadratic_drag": "green",
+        }
+
+        for name, color in arrow_data.items():
+            arrow = FancyArrowPatch(
+                (0.0, 0.0),
+                (0.0, 0.0),
+                arrowstyle="->",
+                mutation_scale=14,
+                linewidth=2.0,
+                color=color,
+            )
+            axis.add_patch(arrow)
+            velocity_arrows[name] = arrow
+
+        velocity_text = axis.text(
+            0.02,
+            0.78,
+            "",
+            transform=axis.transAxes,
+            fontsize=9,
+            bbox={
+                "facecolor": "white",
+                "alpha": 0.75,
+                "edgecolor": "none",
+            },
+        )
 
     figure.tight_layout()
 
     def update(frame_index: int) -> tuple[Line2D, Line2D, Line2D, Text]:
+        current_time = float(animation_time[frame_index])
+
+        current_no_drag_x = float(no_drag_x[frame_index])
+        current_no_drag_y = float(no_drag_y[frame_index])
+
+        current_linear_x = float(linear_drag_x[frame_index])
+        current_linear_y = float(linear_drag_y[frame_index])
+
+        current_quadratic_x = float(quadratic_drag_x[frame_index])
+        current_quadratic_y = float(quadratic_drag_y[frame_index])
+
+        current_no_drag_vx = float(no_drag_vx[frame_index])
+        current_no_drag_vy = float(no_drag_vy[frame_index])
+
+        current_linear_vx = float(linear_drag_vx[frame_index])
+        current_linear_vy = float(linear_drag_vy[frame_index])
+
+        current_quadratic_vx = float(quadratic_drag_vx[frame_index])
+        current_quadratic_vy = float(quadratic_drag_vy[frame_index])
+
         no_drag_point.set_data(
-            [float(no_drag_x[frame_index])],
-            [float(no_drag_y[frame_index])],
+            [current_no_drag_x],
+            [current_no_drag_y],
         )
 
         linear_drag_point.set_data(
-            [float(linear_drag_x[frame_index])],
-            [float(linear_drag_y[frame_index])],
+            [current_linear_x],
+            [current_linear_y],
         )
 
         quadratic_drag_point.set_data(
-            [float(quadratic_drag_x[frame_index])],
-            [float(quadratic_drag_y[frame_index])],
+            [current_quadratic_x],
+            [current_quadratic_y],
         )
 
-        time_text.set_text(f"t = {animation_time[frame_index]:.2f} s")
+        time_text.set_text(f"t = {current_time:.2f} s")
+
+        if show_vectors:
+            no_drag_arrow = velocity_arrows.get("no_drag")
+            linear_drag_arrow = velocity_arrows.get("linear_drag")
+            quadratic_drag_arrow = velocity_arrows.get("quadratic_drag")
+
+            if no_drag_arrow is not None:
+                no_drag_arrow.set_positions(
+                    (current_no_drag_x, current_no_drag_y),
+                    (
+                        current_no_drag_x + current_no_drag_vx * velocity_scale,
+                        current_no_drag_y + current_no_drag_vy * velocity_scale,
+                    ),
+                )
+
+            if linear_drag_arrow is not None:
+                linear_drag_arrow.set_positions(
+                    (current_linear_x, current_linear_y),
+                    (
+                        current_linear_x + current_linear_vx * velocity_scale,
+                        current_linear_y + current_linear_vy * velocity_scale,
+                    ),
+                )
+
+            if quadratic_drag_arrow is not None:
+                quadratic_drag_arrow.set_positions(
+                    (current_quadratic_x, current_quadratic_y),
+                    (
+                        current_quadratic_x + current_quadratic_vx * velocity_scale,
+                        current_quadratic_y + current_quadratic_vy * velocity_scale,
+                    ),
+                )
+
+            if velocity_text is not None:
+                velocity_text.set_text(
+                    "Velocity components\n"
+                    f"No drag: vx={current_no_drag_vx:.2f}, vy={current_no_drag_vy:.2f} m/s\n"
+                    f"Linear:  vx={current_linear_vx:.2f}, vy={current_linear_vy:.2f} m/s\n"
+                    f"Quad:    vx={current_quadratic_vx:.2f}, vy={current_quadratic_vy:.2f} m/s\n"
+                    f"Wind:    vx={parameters.wind_vx:.2f}, vy={parameters.wind_vy:.2f} m/s"
+                )
 
         return no_drag_point, linear_drag_point, quadratic_drag_point, time_text
 
@@ -306,7 +571,7 @@ def animate_projectile_motion(
         update,
         frames=GIF_FRAMES,
         interval=1000 // GIF_FPS,
-        blit=True,
+        blit=False,
     )
 
     animation.save(
