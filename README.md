@@ -63,8 +63,6 @@ git clone "https://github.com/ShOOmet14/projectile_motion_of_a_sphere"
 cd projectile_motion_of_a_sphere/
 ```
 
-Replace `<repository-url>` with your GitHub repository URL and `<project-folder>` with the folder created after cloning.
-
 ### 2. Create a virtual environment
 
 #### Windows
