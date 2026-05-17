@@ -1,11 +1,10 @@
 # To do
 
-1. take wind into consideration
-2. add vectors on plots for wind (an arrow which points in wind direction)
-3. add possibility to change wind strength and angle
-4. add vectors show vectors option inside settings part of parameters, as checkbox, if enabled it will show vectors for wind (on plots and video playback) and velocity (on video playback) so we can see how force changes during flight.
-5. update readme after adding wind
-6. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
+1. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
+2. fix plots and gif exports so that elements don't overlap
+3. update readme assets after fixing png and gif exporting
+4. update readme after adding wind
+5. fix code around wind logic
 
 # Projectile Motion Simulator
 
@@ -60,8 +59,8 @@ If you are interested in the physics part, take a look at the PDF file inside th
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd <project-folder>
+git clone "https://github.com/ShOOmet14/projectile_motion_of_a_sphere"
+cd projectile_motion_of_a_sphere/
 ```
 
 Replace `<repository-url>` with your GitHub repository URL and `<project-folder>` with the folder created after cloning.
