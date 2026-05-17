@@ -10,19 +10,19 @@
 
 A desktop application for simulating and comparing projectile motion models.
 
-This project was a learning experiment for me and a challenging step in understanding both GUI development and physics simulation. The app allows the user to change physical parameters, run the simulation, visualize results, and export generated data, plots, and animation.
+This project was a learning experiment for me and a challenging step in understanding both GUI development (using **PySide6**) and physics simulation. The app allows the user to change physical parameters, run the simulation, visualize results, and export generated data, plots, and animation.
 
 ## Features
 
-- Simulation of projectile motion with three models: no air resistance, linear drag, and quadratic drag using Runge-Kutta numerical integration.
+- Simulation of projectile motion with three models: no air resistance, linear drag, and quadratic drag using **Runge-Kutta numerical integration**.
 - Interactive parameter panel with input validation for physically incorrect values.
 - Validation is handled both in the GUI and in the parameter dataclass model, so invalid values cannot be used even if they are loaded from saved settings.
 - Light and dark theme.
-- Styled GUI using Qt CSS.
+- Styled GUI using **Qt CSS**.
 - Multiple result tabs: trajectory plot, energy plot, speed plot, playback animation, text results.
-- Export options for: CSV files, plots, and GIF animation.
+- Export options for: **CSV files**, plots, and GIF animation.
 - Buttons for opening exported plots and animations directories.
-- User settings and app settings are saved to JSON files.
+- User settings and app settings are saved to **JSON files**.
 
 ## Preview
 
