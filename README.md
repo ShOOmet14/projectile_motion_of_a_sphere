@@ -1,16 +1,16 @@
 # To do
 
-1. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
-2. read and refactor the code
-3. fix plots and gif exports so that elements don't overlap
-4. update readme assets after fixing png and gif exporting
-5. update readme after adding wind
-6. fix code around wind logic
-7. The playback animation can become less smooth for very small time steps or long simulations.
-8. The current vector arrows show velocity, not total force or acceleration.
-9. Quadratic drag uses a fixed time step; adaptive time stepping could improve accuracy.
-10. Wind is constant in time and space; gusts or altitude-dependent wind are not modeled.
-11. The projectile is treated as a point mass for motion, with radius used only for drag area.
+1. read and refactor the code
+2. fix plots and gif exports so that elements don't overlap
+3. update readme assets after fixing png and gif exporting
+4. update readme after adding wind
+5. fix code around wind logic
+6. The playback animation can become less smooth for very small time steps or long simulations.
+7. The current vector arrows show velocity, not total force or acceleration.
+8. Quadratic drag uses a fixed time step; adaptive time stepping could improve accuracy.
+9. Wind is constant in time and space; gusts or altitude-dependent wind are not modeled.
+10. The projectile is treated as a point mass for motion, with radius used only for drag area.
+11. Add info to the pdf and readme after adding all of the previous stuff.
 
 # Projectile Motion Simulator
 
