@@ -6,6 +6,11 @@
 4. update readme assets after fixing png and gif exporting
 5. update readme after adding wind
 6. fix code around wind logic
+7. The playback animation can become less smooth for very small time steps or long simulations.
+8. The current vector arrows show velocity, not total force or acceleration.
+9. Quadratic drag uses a fixed time step; adaptive time stepping could improve accuracy.
+10. Wind is constant in time and space; gusts or altitude-dependent wind are not modeled.
+11. The projectile is treated as a point mass for motion, with radius used only for drag area.
 
 # Projectile Motion Simulator
 
@@ -42,6 +47,8 @@ This project was a learning experiment for me and a challenging step in understa
 ## Physics stuff
 
 If you are interested in the physics part, take a look at the PDF file inside the `docs/` folder. It contains the equations and explanations of how the simulation works, based on my current understanding of the topic.
+
+[Read the physics explanation PDF](docs/physics_projectile_motion.pdf)
 
 ## Project structure
 
