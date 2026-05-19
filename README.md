@@ -1,10 +1,11 @@
 # To do
 
 1. make latex file to pdf explaining all physics logic in here, explaining algorithms and the whole project
-2. fix plots and gif exports so that elements don't overlap
-3. update readme assets after fixing png and gif exporting
-4. update readme after adding wind
-5. fix code around wind logic
+2. read and refactor the code
+3. fix plots and gif exports so that elements don't overlap
+4. update readme assets after fixing png and gif exporting
+5. update readme after adding wind
+6. fix code around wind logic
 
 # Projectile Motion Simulator
 
