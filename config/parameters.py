@@ -26,6 +26,42 @@ class Parameters:
     x0: float = 0.0
     y0: float = 0.0
 
+    @property
+    def angle_rad(self) -> float:
+        return self.angle_deg * pi / 180.0
+
+    @property
+    def vx0(self) -> float:
+        return self.v0 * cos(self.angle_rad)
+
+    @property
+    def vy0(self) -> float:
+        return self.v0 * sin(self.angle_rad)
+
+    @property
+    def area(self) -> float:
+        return pi * self.radius * self.radius
+
+    @property
+    def k(self) -> float:
+        return self.linear_drag / self.mass
+
+    @property
+    def q(self) -> float:
+        return self.rho * self.cd * self.area / (2.0 * self.mass)
+
+    @property
+    def wind_angle_rad(self) -> float:
+        return self.wind_angle_deg * pi / 180.0
+
+    @property
+    def wind_vx(self) -> float:
+        return self.wind_speed * cos(self.wind_angle_rad)
+
+    @property
+    def wind_vy(self) -> float:
+        return self.wind_speed * sin(self.wind_angle_rad)
+
     def __post_init__(self) -> None:
         for name in (
             "v0",
@@ -90,42 +126,6 @@ class Parameters:
             raise ValueError(
                 "Too many simulation steps. Increase dt or decrease t_max."
             )
-
-    @property
-    def angle_rad(self) -> float:
-        return self.angle_deg * pi / 180.0
-
-    @property
-    def vx0(self) -> float:
-        return self.v0 * cos(self.angle_rad)
-
-    @property
-    def vy0(self) -> float:
-        return self.v0 * sin(self.angle_rad)
-
-    @property
-    def area(self) -> float:
-        return pi * self.radius * self.radius
-
-    @property
-    def k(self) -> float:
-        return self.linear_drag / self.mass
-
-    @property
-    def q(self) -> float:
-        return self.rho * self.cd * self.area / (2.0 * self.mass)
-
-    @property
-    def wind_angle_rad(self) -> float:
-        return self.wind_angle_deg * pi / 180.0
-
-    @property
-    def wind_vx(self) -> float:
-        return self.wind_speed * cos(self.wind_angle_rad)
-
-    @property
-    def wind_vy(self) -> float:
-        return self.wind_speed * sin(self.wind_angle_rad)
 
 
 DEFAULT_PARAMETERS = Parameters()

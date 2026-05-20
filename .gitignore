@@ -1,6 +1,9 @@
 venv/
 *.zip
+
 __pycache__/
+.pytest_cache/
+
 pyrightconfig.json
 
 config/user_settings.json
