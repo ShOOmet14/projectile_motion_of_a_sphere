@@ -55,11 +55,11 @@ class Parameters:
         return pi * self.radius * self.radius
 
     @property
-    def k(self) -> float:
+    def linear_drag_factor(self) -> float:
         return self.linear_drag / self.mass
 
     @property
-    def q(self) -> float:
+    def quadratic_drag_factor(self) -> float:
         return self.air_density * self.drag_coefficient * self.area / (2.0 * self.mass)
 
     def __post_init__(self) -> None:
@@ -99,16 +99,16 @@ class Parameters:
             raise ValueError("Radius must be greater than zero.")
 
         if self.drag_coefficient < 0:
-            raise ValueError("Drag_coefficient must be greater than or equal to zero.")
+            raise ValueError("drag_coefficient must be greater than or equal to zero.")
 
         if self.air_density < 0:
-            raise ValueError("Air_density must be greater than or equal to zero.")
+            raise ValueError("air_density must be greater than or equal to zero.")
 
         if self.linear_drag <= 0:
             raise ValueError("Linear drag coefficient must be greater than zero.")
 
         if self.time_step <= 0:
-            raise ValueError("Time_step must be greater than zero.")
+            raise ValueError("time_step must be greater than zero.")
 
         if self.time_max <= 0:
             raise ValueError("Max simulation time time_max must be greater than zero.")
