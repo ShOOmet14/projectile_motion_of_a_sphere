@@ -233,12 +233,12 @@ def test_accepts_wind_angle_360_degrees():
 
 
 def test_rejects_zero_time_step():
-    with pytest.raises(ValueError, match="Time_step must be greater than zero"):
+    with pytest.raises(ValueError, match="time_step must be greater than zero."):
         Parameters(time_step=0.0)
 
 
 def test_rejects_negative_time_step():
-    with pytest.raises(ValueError, match="Time_step must be greater than zero"):
+    with pytest.raises(ValueError, match="time_step must be greater than zero."):
         Parameters(time_step=-0.01)
 
 
