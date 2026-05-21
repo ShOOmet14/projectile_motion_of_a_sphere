@@ -3,8 +3,8 @@ import sys
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from config.settings import get_stylesheet, load_theme
-from gui.main_window import MainWindow
+from src.config.settings import get_stylesheet, load_theme
+from src.gui.main_window import MainWindow
 
 
 if __name__ == "__main__":

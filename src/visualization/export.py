@@ -12,8 +12,8 @@ from matplotlib.patches import FancyArrowPatch
 from matplotlib.text import Text
 from matplotlib.axes import Axes
 
-from config.parameters import Parameters
-from simulation.solve import ProjectileResult
+from src.config.parameters import Parameters
+from src.simulation.solve import ProjectileResult
 
 
 GIF_FRAMES = 180

@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Literal, TypeGuard
 
-from config.parameters import DEFAULT_PARAMETERS, Parameters
+from src.config.parameters import DEFAULT_PARAMETERS, Parameters
 
 
 ThemeName = Literal["light", "dark"]

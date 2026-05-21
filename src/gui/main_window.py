@@ -1,0 +1,338 @@
+from pathlib import Path
+
+from PySide6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QMainWindow,
+    QMessageBox,
+    QTabWidget,
+    QWidget,
+)
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QCloseEvent, QDesktopServices
+
+from src.gui.animation_canvas import AnimationCanvas
+from src.gui.parameter_panel import ParameterPanel
+from src.gui.plot_canvas import PlotCanvas
+from src.gui.results_panel import ResultsPanel
+
+from src.simulation.solve import (
+    ProjectileResult,
+    solve_projectile_motion_no_drag,
+    solve_projectile_motion_linear_drag,
+    solve_projectile_motion_quadratic_drag,
+)
+
+from src.config.settings import (
+    ThemeName,
+    get_stylesheet,
+    is_theme_name,
+    load_theme,
+    load_user_settings,
+    save_theme,
+    save_user_settings,
+)
+from src.storage.csv_export import export_simulation_results_to_csv
+
+from src.visualization.export import (
+    plot_motion,
+    plot_energy,
+    plot_speed,
+    animate_projectile_motion,
+)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.setWindowTitle("Projectile Motion Simulator")
+        self.resize(1400, 850)
+
+        self.no_drag_result: ProjectileResult | None = None
+        self.linear_drag_result: ProjectileResult | None = None
+        self.quadratic_drag_result: ProjectileResult | None = None
+
+        central_widget = QWidget()
+        central_widget.setObjectName("mainContainer")
+
+        main_layout = QHBoxLayout()
+
+        self.current_parameters = load_user_settings()
+        self.current_theme: ThemeName = load_theme()
+
+        self.parameter_panel = ParameterPanel(
+            self.current_parameters,
+            self.current_theme,
+        )
+
+        self.trajectory_canvas = PlotCanvas(
+            title="Trajectory comparison",
+            x_label="x [m]",
+            y_label="y [m]",
+        )
+
+        self.animation_canvas = AnimationCanvas()
+
+        self.energy_canvas = PlotCanvas(
+            title="Mechanical energy comparison",
+            x_label="t [s]",
+            y_label="E [J]",
+        )
+
+        self.speed_canvas = PlotCanvas(
+            title="Speed comparison",
+            x_label="t [s]",
+            y_label="v [m/s]",
+        )
+
+        self.results_panel = ResultsPanel()
+
+        self.tabs = QTabWidget()
+        self.tabs.setObjectName("mainTabs")
+        self.tabs.addTab(self.trajectory_canvas, "Trajectory")
+        self.tabs.addTab(self.energy_canvas, "Energy")
+        self.tabs.addTab(self.speed_canvas, "Speed")
+        self.tabs.addTab(self.animation_canvas, "Playback")
+        self.tabs.addTab(self.results_panel, "Results")
+
+        self.parameter_panel.run_simulation_button.clicked.connect(self.run_simulation)
+        self.parameter_panel.export_csv_button.clicked.connect(self.export_csv)
+        self.parameter_panel.export_plots_button.clicked.connect(self.export_plots)
+        self.parameter_panel.export_animation_button.clicked.connect(
+            self.export_animation
+        )
+        self.parameter_panel.theme_input.currentTextChanged.connect(self.change_theme)
+        self.parameter_panel.open_plots_folder_button.clicked.connect(
+            self.open_plots_folder
+        )
+        self.parameter_panel.open_animations_folder_button.clicked.connect(
+            self.open_animations_folder
+        )
+
+        main_layout.addWidget(self.parameter_panel)
+        main_layout.addWidget(self.tabs, 1)
+
+        central_widget.setLayout(main_layout)
+        self.setCentralWidget(central_widget)
+
+    def run_simulation(self) -> None:
+        try:
+            parameters = self.parameter_panel.get_parameters()
+            show_vectors = self.parameter_panel.should_show_vectors()
+
+            self.current_parameters = parameters
+            save_user_settings(parameters)
+
+            no_drag = solve_projectile_motion_no_drag(parameters)
+            linear_drag = solve_projectile_motion_linear_drag(parameters)
+            quadratic_drag = solve_projectile_motion_quadratic_drag(parameters)
+
+            self.no_drag_result = no_drag
+            self.linear_drag_result = linear_drag
+            self.quadratic_drag_result = quadratic_drag
+
+            self.trajectory_canvas.plot_trajectory_comparison(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+                parameters,
+                show_vectors,
+            )
+
+            self.animation_canvas.set_results(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+                parameters,
+                show_vectors,
+            )
+
+            self.energy_canvas.plot_energy_comparison(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+            )
+
+            self.speed_canvas.plot_speed_comparison(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+            )
+
+            self.results_panel.set_results(
+                no_drag,
+                linear_drag,
+                quadratic_drag,
+            )
+
+        except ValueError as error:
+            QMessageBox.warning(
+                self,
+                "Simulation error",
+                str(error),
+            )
+
+    def has_simulation_results(self) -> bool:
+        return (
+            self.no_drag_result is not None
+            and self.linear_drag_result is not None
+            and self.quadratic_drag_result is not None
+        )
+
+    def export_csv(self) -> None:
+        if not self.has_simulation_results():
+            QMessageBox.warning(
+                self,
+                "Export error",
+                "Run simulation before exporting CSV files.",
+            )
+            return
+
+        assert self.no_drag_result is not None
+        assert self.linear_drag_result is not None
+        assert self.quadratic_drag_result is not None
+
+        export_simulation_results_to_csv(
+            self.no_drag_result,
+            self.linear_drag_result,
+            self.quadratic_drag_result,
+            "results",
+        )
+
+        QMessageBox.information(
+            self,
+            "Export complete",
+            "CSV files saved to results/.",
+        )
+
+    def export_plots(self) -> None:
+        if not self.has_simulation_results():
+            QMessageBox.warning(
+                self,
+                "Export error",
+                "Run simulation before exporting plots.",
+            )
+            return
+
+        assert self.no_drag_result is not None
+        assert self.linear_drag_result is not None
+        assert self.quadratic_drag_result is not None
+
+        plots_directory = Path("results") / "plots"
+        plots_directory.mkdir(parents=True, exist_ok=True)
+
+        parameters = self.parameter_panel.get_parameters()
+        show_vectors = self.parameter_panel.should_show_vectors()
+
+        plot_motion(
+            self.no_drag_result["x"],
+            self.no_drag_result["y"],
+            self.linear_drag_result["x"],
+            self.linear_drag_result["y"],
+            self.quadratic_drag_result["x"],
+            self.quadratic_drag_result["y"],
+            parameters,
+            show_vectors,
+            plots_directory / "trajectory_plot.png",
+        )
+
+        plot_energy(
+            self.no_drag_result["E"],
+            self.linear_drag_result["E"],
+            self.quadratic_drag_result["E"],
+            self.no_drag_result["t"],
+            self.linear_drag_result["t"],
+            self.quadratic_drag_result["t"],
+            plots_directory / "energy_comparison.png",
+        )
+
+        plot_speed(
+            self.no_drag_result["v"],
+            self.linear_drag_result["v"],
+            self.quadratic_drag_result["v"],
+            self.no_drag_result["t"],
+            self.linear_drag_result["t"],
+            self.quadratic_drag_result["t"],
+            plots_directory / "speed_comparison.png",
+        )
+
+        QMessageBox.information(
+            self,
+            "Export complete",
+            (
+                "Plots saved to results/plots/.\n\n"
+                "You can open this folder using the 'Open plots folder' button "
+                "in the left panel."
+            ),
+        )
+
+    def export_animation(self) -> None:
+        if not self.has_simulation_results():
+            QMessageBox.warning(
+                self,
+                "Export error",
+                "Run simulation before exporting animation.",
+            )
+            return
+
+        assert self.no_drag_result is not None
+        assert self.linear_drag_result is not None
+        assert self.quadratic_drag_result is not None
+
+        animations_directory = Path("results") / "animations"
+        animations_directory.mkdir(parents=True, exist_ok=True)
+
+        parameters = self.parameter_panel.get_parameters()
+        show_vectors = self.parameter_panel.should_show_vectors()
+
+        animate_projectile_motion(
+            self.no_drag_result,
+            self.linear_drag_result,
+            self.quadratic_drag_result,
+            parameters,
+            show_vectors,
+            animations_directory / "projectile_motion.gif",
+        )
+
+        QMessageBox.information(
+            self,
+            "Export complete",
+            (
+                "Animation saved to results/animations/projectile_motion.gif.\n\n"
+                "You can open this folder using the 'Open GIF folder' button "
+                "in the left panel."
+            ),
+        )
+
+    def change_theme(self, theme_text: str) -> None:
+        if not is_theme_name(theme_text):
+            return
+
+        self.current_theme = theme_text
+        save_theme(theme_text)
+
+        application = QApplication.instance()
+
+        if isinstance(application, QApplication):
+            application.setStyleSheet(get_stylesheet(theme_text))
+
+    def open_plots_folder(self) -> None:
+        plots_directory = Path("results") / "plots"
+        plots_directory.mkdir(parents=True, exist_ok=True)
+
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(plots_directory.resolve())))
+
+    def open_animations_folder(self) -> None:
+        animations_directory = Path("results") / "animations"
+        animations_directory.mkdir(parents=True, exist_ok=True)
+
+        QDesktopServices.openUrl(
+            QUrl.fromLocalFile(str(animations_directory.resolve()))
+        )
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        parameters = self.parameter_panel.get_parameters()
+        save_user_settings(parameters)
+
+        super().closeEvent(event)

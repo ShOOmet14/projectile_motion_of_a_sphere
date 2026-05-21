@@ -1,4 +1,4 @@
 import pytest
-from config.parameters import Parameters
+from src.config.parameters import Parameters
 
 # def test_parameters_
