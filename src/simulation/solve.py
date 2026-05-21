@@ -174,12 +174,12 @@ def solve_projectile_motion_no_drag(
     parameters: Parameters = DEFAULT_PARAMETERS,
 ) -> ProjectileResult:
 
-    time = np.arange(0.0, parameters.t_max, parameters.dt, dtype=np.float64)
+    time = np.arange(0.0, parameters.time_max, parameters.time_step, dtype=np.float64)
 
     x, y = calculate_position_no_drag(
         time,
-        parameters.x0,
-        parameters.y0,
+        parameters.initial_x,
+        parameters.initial_y,
         parameters.vx0,
         parameters.vy0,
         parameters.g,
@@ -260,15 +260,15 @@ def solve_projectile_motion_linear_drag(
     parameters: Parameters = DEFAULT_PARAMETERS,
 ) -> ProjectileResult:
 
-    time = np.arange(0.0, parameters.t_max, parameters.dt, dtype=np.float64)
+    time = np.arange(0.0, parameters.time_max, parameters.time_step, dtype=np.float64)
 
     x, y = calculate_position_linear_drag(
         time,
-        parameters.x0,
-        parameters.y0,
+        parameters.initial_x,
+        parameters.initial_y,
         parameters.vx0,
         parameters.vy0,
-        parameters.k,
+        parameters.linear_drag_factor,
         parameters.g,
         parameters.wind_vx,
         parameters.wind_vy,
@@ -278,7 +278,7 @@ def solve_projectile_motion_linear_drag(
         time,
         parameters.vx0,
         parameters.vy0,
-        parameters.k,
+        parameters.linear_drag_factor,
         parameters.g,
         parameters.wind_vx,
         parameters.wind_vy,
@@ -353,8 +353,8 @@ def solve_projectile_motion_quadratic_drag(
 ) -> ProjectileResult:
 
     time_quadratic: list[float] = [0.0]
-    x: list[float] = [parameters.x0]
-    y: list[float] = [parameters.y0]
+    x: list[float] = [parameters.initial_x]
+    y: list[float] = [parameters.initial_y]
     vx: list[float] = [parameters.vx0]
     vy: list[float] = [parameters.vy0]
 
@@ -362,14 +362,14 @@ def solve_projectile_motion_quadratic_drag(
         current_state = np.array([x[-1], y[-1], vx[-1], vy[-1]], dtype=np.float64)
         x_new, y_new, vx_new, vy_new = runge_kutta_method(
             current_state,
-            parameters.dt,
-            parameters.q,
+            parameters.time_step,
+            parameters.quadratic_drag_factor,
             parameters.g,
             parameters.wind_vx,
             parameters.wind_vy,
         )
 
-        time_quadratic.append(time_quadratic[-1] + parameters.dt)
+        time_quadratic.append(time_quadratic[-1] + parameters.time_step)
         x.append(x_new)
         y.append(y_new)
         vx.append(vx_new)
@@ -378,7 +378,7 @@ def solve_projectile_motion_quadratic_drag(
         if y_new < 0:
             break
 
-        if time_quadratic[-1] >= parameters.t_max:
+        if time_quadratic[-1] >= parameters.time_max:
             raise ValueError(
                 "Quadratic-drag projectile did not hit the ground. Increase parameters.t_max."
             )

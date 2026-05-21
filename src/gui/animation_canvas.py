@@ -249,14 +249,14 @@ class AnimationCanvas(QWidget):
             return
 
         if self.parameters.wind_speed > 0:
-            angle_rad = self.parameters.wind_angle_deg * pi / 180.0
+            wind_angle_radians = self.parameters.wind_angle_degrees * pi / 180.0
 
             start_x = 0.78
             start_y = 0.88
             length = 0.12
 
-            dx = length * cos(angle_rad)
-            dy = length * sin(angle_rad)
+            dx = length * cos(wind_angle_radians)
+            dy = length * sin(wind_angle_radians)
 
             self.wind_arrow = FancyArrowPatch(
                 (start_x, start_y),
@@ -275,7 +275,7 @@ class AnimationCanvas(QWidget):
                 start_y - 0.07,
                 (
                     f"Wind: {self.parameters.wind_speed:.1f} m/s, "
-                    f"{self.parameters.wind_angle_deg:.0f}°"
+                    f"{self.parameters.wind_angle_degrees:.0f}°"
                 ),
                 transform=self.axis.transAxes,
                 fontsize=9,

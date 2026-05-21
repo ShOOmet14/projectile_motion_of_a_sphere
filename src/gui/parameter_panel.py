@@ -28,14 +28,14 @@ class ParameterPanel(QWidget):
 
         self.velocity_input = QDoubleSpinBox()
         self.velocity_input.setRange(0.0, 1000.0)
-        self.velocity_input.setValue(parameters.v0)
+        self.velocity_input.setValue(parameters.initial_velocity)
         self.velocity_input.setSingleStep(1.0)
         self.velocity_input.setDecimals(2)
         self.velocity_input.setSuffix(" m/s")
 
         self.angle_input = QDoubleSpinBox()
         self.angle_input.setRange(0.0, 90.0)
-        self.angle_input.setValue(parameters.angle_deg)
+        self.angle_input.setValue(parameters.initial_angle_degrees)
         self.angle_input.setSingleStep(0.1)
         self.angle_input.setDecimals(1)
         self.angle_input.setSuffix(" °")
@@ -56,13 +56,13 @@ class ParameterPanel(QWidget):
 
         self.drag_coefficient_input = QDoubleSpinBox()
         self.drag_coefficient_input.setRange(0.0, 5.0)
-        self.drag_coefficient_input.setValue(parameters.cd)
+        self.drag_coefficient_input.setValue(parameters.drag_coefficient)
         self.drag_coefficient_input.setSingleStep(0.01)
         self.drag_coefficient_input.setDecimals(3)
 
         self.air_density_input = QDoubleSpinBox()
         self.air_density_input.setRange(0.0, 10.0)
-        self.air_density_input.setValue(parameters.rho)
+        self.air_density_input.setValue(parameters.air_density)
         self.air_density_input.setSingleStep(0.001)
         self.air_density_input.setDecimals(4)
         self.air_density_input.setSuffix(" kg/m³")
@@ -75,14 +75,14 @@ class ParameterPanel(QWidget):
 
         self.dt_input = QDoubleSpinBox()
         self.dt_input.setRange(0.0001, 1.0)
-        self.dt_input.setValue(parameters.dt)
+        self.dt_input.setValue(parameters.time_step)
         self.dt_input.setSingleStep(0.001)
         self.dt_input.setDecimals(4)
         self.dt_input.setSuffix(" s")
 
         self.t_max_input = QDoubleSpinBox()
         self.t_max_input.setRange(1.0, 1000.0)
-        self.t_max_input.setValue(parameters.t_max)
+        self.t_max_input.setValue(parameters.time_max)
         self.t_max_input.setSingleStep(1.0)
         self.t_max_input.setDecimals(2)
         self.t_max_input.setSuffix(" s")
@@ -103,7 +103,7 @@ class ParameterPanel(QWidget):
 
         self.wind_angle_input = QDoubleSpinBox()
         self.wind_angle_input.setRange(0.0, 360.0)
-        self.wind_angle_input.setValue(parameters.wind_angle_deg)
+        self.wind_angle_input.setValue(parameters.wind_angle_degrees)
         self.wind_angle_input.setSingleStep(5.0)
         self.wind_angle_input.setDecimals(1)
         self.wind_angle_input.setSuffix(" °")
@@ -172,33 +172,33 @@ class ParameterPanel(QWidget):
 
     def get_parameters(self) -> Parameters:
         return Parameters(
-            v0=self.velocity_input.value(),
-            angle_deg=self.angle_input.value(),
+            initial_velocity=self.velocity_input.value(),
+            initial_angle_degrees=self.angle_input.value(),
             mass=self.mass_input.value(),
             radius=self.radius_input.value(),
-            cd=self.drag_coefficient_input.value(),
-            rho=self.air_density_input.value(),
+            drag_coefficient=self.drag_coefficient_input.value(),
+            air_density=self.air_density_input.value(),
             linear_drag=self.linear_drag_coefficient_input.value(),
-            dt=self.dt_input.value(),
-            t_max=self.t_max_input.value(),
+            time_step=self.dt_input.value(),
+            time_max=self.t_max_input.value(),
             g=self.gravity_input.value(),
             wind_speed=self.wind_speed_input.value(),
-            wind_angle_deg=self.wind_angle_input.value(),
+            wind_angle_degrees=self.wind_angle_input.value(),
         )
 
     def set_parameters(self, parameters: Parameters) -> None:
-        self.velocity_input.setValue(parameters.v0)
-        self.angle_input.setValue(parameters.angle_deg)
+        self.velocity_input.setValue(parameters.initial_velocity)
+        self.angle_input.setValue(parameters.initial_angle_degrees)
         self.mass_input.setValue(parameters.mass)
         self.radius_input.setValue(parameters.radius)
-        self.drag_coefficient_input.setValue(parameters.cd)
-        self.air_density_input.setValue(parameters.rho)
+        self.drag_coefficient_input.setValue(parameters.drag_coefficient)
+        self.air_density_input.setValue(parameters.air_density)
         self.linear_drag_coefficient_input.setValue(parameters.linear_drag)
-        self.dt_input.setValue(parameters.dt)
-        self.t_max_input.setValue(parameters.t_max)
+        self.dt_input.setValue(parameters.time_step)
+        self.t_max_input.setValue(parameters.time_max)
         self.gravity_input.setValue(parameters.g)
         self.wind_speed_input.setValue(parameters.wind_speed)
-        self.wind_angle_input.setValue(parameters.wind_angle_deg)
+        self.wind_angle_input.setValue(parameters.wind_angle_degrees)
 
     def should_show_vectors(self) -> bool:
         return self.show_vectors_checkbox.isChecked()

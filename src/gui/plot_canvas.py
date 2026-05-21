@@ -152,14 +152,14 @@ class PlotCanvas(QWidget):
         if parameters.wind_speed <= 0:
             return
 
-        angle_rad = parameters.wind_angle_deg * pi / 180.0
+        wind_angle_radians = parameters.wind_angle_degrees * pi / 180.0
 
         start_x = 0.08
         start_y = 0.88
         length = 0.12
 
-        dx = length * cos(angle_rad)
-        dy = length * sin(angle_rad)
+        dx = length * cos(wind_angle_radians)
+        dy = length * sin(wind_angle_radians)
 
         self.axis.annotate(
             "",
@@ -176,7 +176,7 @@ class PlotCanvas(QWidget):
         self.axis.text(
             start_x,
             start_y - 0.07,
-            f"Wind: {parameters.wind_speed:.1f} m/s, {parameters.wind_angle_deg:.0f}°",
+            f"Wind: {parameters.wind_speed:.1f} m/s, {parameters.wind_angle_degrees:.0f}°",
             transform=self.axis.transAxes,
             fontsize=9,
             bbox={

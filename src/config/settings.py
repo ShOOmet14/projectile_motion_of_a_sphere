@@ -105,35 +105,35 @@ def get_stylesheet(theme: ThemeName) -> str:
 
 def parameters_to_settings_dict(parameters: Parameters) -> dict[str, float]:
     return {
-        "v0": float(parameters.v0),
-        "angle_deg": float(parameters.angle_deg),
+        "v0": float(parameters.initial_velocity),
+        "angle_deg": float(parameters.initial_angle_degrees),
         "mass": float(parameters.mass),
         "radius": float(parameters.radius),
-        "cd": float(parameters.cd),
-        "rho": float(parameters.rho),
+        "cd": float(parameters.drag_coefficient),
+        "rho": float(parameters.air_density),
         "linear_drag": float(parameters.linear_drag),
-        "dt": float(parameters.dt),
-        "t_max": float(parameters.t_max),
+        "dt": float(parameters.time_step),
+        "t_max": float(parameters.time_max),
         "g": float(parameters.g),
         "wind_speed": float(parameters.wind_speed),
-        "wind_angle_deg": float(parameters.wind_angle_deg),
+        "wind_angle_deg": float(parameters.wind_angle_degrees),
     }
 
 
 def settings_dict_to_parameters(settings: dict[str, float]) -> Parameters:
     return Parameters(
-        v0=settings["v0"],
-        angle_deg=settings["angle_deg"],
+        initial_velocity=settings["v0"],
+        initial_angle_degrees=settings["angle_deg"],
         mass=settings["mass"],
         radius=settings["radius"],
-        cd=settings["cd"],
-        rho=settings["rho"],
+        drag_coefficient=settings["cd"],
+        air_density=settings["rho"],
         linear_drag=settings["linear_drag"],
-        dt=settings["dt"],
-        t_max=settings["t_max"],
+        time_step=settings["dt"],
+        time_max=settings["t_max"],
         g=settings["g"],
         wind_speed=settings["wind_speed"],
-        wind_angle_deg=settings["wind_angle_deg"],
+        wind_angle_degrees=settings["wind_angle_deg"],
     )
 
 
