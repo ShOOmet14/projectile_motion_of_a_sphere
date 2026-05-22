@@ -1,16 +1,18 @@
-import pytest
 import math
 from dataclasses import FrozenInstanceError
+from typing import Any, cast
 
-from src.config.parameters import Parameters, DEFAULT_PARAMETERS, MAX_SIMULATION_STEPS
+import pytest
+
+from src.config.parameters import DEFAULT_PARAMETERS, MAX_SIMULATION_STEPS, Parameters
 
 
 @pytest.fixture
-def parameters():
+def parameters() -> Parameters:
     return Parameters()
 
 
-def test_default_parameters_initialization(parameters: Parameters):
+def test_default_parameters_initialization(parameters: Parameters) -> None:
     assert parameters.initial_velocity == 50.0
     assert parameters.initial_angle_degrees == 45.0
     assert parameters.mass == 0.145
@@ -27,12 +29,11 @@ def test_default_parameters_initialization(parameters: Parameters):
     assert parameters.initial_y == 0.0
 
 
-def test_default_parameters_constant():
+def test_default_parameters_constant() -> None:
     assert DEFAULT_PARAMETERS == Parameters()
 
 
-def test_parameters_are_frozen(parameters: Parameters):
-
+def test_parameters_are_frozen(parameters: Parameters) -> None:
     with pytest.raises(FrozenInstanceError):
         setattr(parameters, "mass", 1.0)
 
@@ -45,7 +46,7 @@ def test_parameters_are_frozen(parameters: Parameters):
         (90.0, math.pi / 2),
     ],
 )
-def test_initial_angle_radians(degrees: float, radians_expected: float):
+def test_initial_angle_radians(degrees: float, radians_expected: float) -> None:
     parameters = Parameters(initial_angle_degrees=degrees)
 
     assert parameters.initial_angle_radians == pytest.approx(radians_expected)
@@ -61,7 +62,7 @@ def test_initial_angle_radians(degrees: float, radians_expected: float):
         (360.0, 2 * math.pi),
     ],
 )
-def test_wind_angle_radians(degrees: float, radians_expected: float):
+def test_wind_angle_radians(degrees: float, radians_expected: float) -> None:
     parameters = Parameters(wind_angle_degrees=degrees)
 
     assert parameters.wind_angle_radians == pytest.approx(radians_expected)
@@ -76,8 +77,10 @@ def test_wind_angle_radians(degrees: float, radians_expected: float):
     ],
 )
 def test_initial_velocity_components(
-    angle: int, expected_vx: float, expected_vy: float
-):
+    angle: float,
+    expected_vx: float,
+    expected_vy: float,
+) -> None:
     parameters = Parameters(
         initial_velocity=50.0,
         initial_angle_degrees=angle,
@@ -97,7 +100,11 @@ def test_initial_velocity_components(
         (360.0, 10.0, 0.0),
     ],
 )
-def test_wind_velocity_components(angle: int, expected_vx: float, expected_vy: float):
+def test_wind_velocity_components(
+    angle: float,
+    expected_vx: float,
+    expected_vy: float,
+) -> None:
     parameters = Parameters(
         wind_speed=10.0,
         wind_angle_degrees=angle,
@@ -107,7 +114,7 @@ def test_wind_velocity_components(angle: int, expected_vx: float, expected_vy: f
     assert parameters.wind_vy == pytest.approx(expected_vy)
 
 
-def test_area():
+def test_area() -> None:
     parameters = Parameters(radius=0.0366)
 
     expected = math.pi * 0.0366 * 0.0366
@@ -115,7 +122,7 @@ def test_area():
     assert parameters.area == pytest.approx(expected)
 
 
-def test_linear_drag_factor_k():
+def test_linear_drag_factor_k() -> None:
     parameters = Parameters(
         linear_drag=0.02,
         mass=0.145,
@@ -124,7 +131,7 @@ def test_linear_drag_factor_k():
     assert parameters.linear_drag_factor == pytest.approx(0.02 / 0.145)
 
 
-def test_quadratic_drag_factor_q():
+def test_quadratic_drag_factor_q() -> None:
     parameters = Parameters(
         air_density=1.225,
         drag_coefficient=0.47,
@@ -158,11 +165,11 @@ def test_quadratic_drag_factor_q():
     ],
 )
 @pytest.mark.parametrize("bad_value", [math.inf, -math.inf, math.nan])
-def test_rejects_non_finite_values(field_name: str, bad_value: int):
-    kwargs = {field_name: bad_value}
+def test_rejects_non_finite_values(field_name: str, bad_value: float) -> None:
+    kwargs: dict[str, float] = {field_name: bad_value}
 
     with pytest.raises(ValueError, match="must be a finite number"):
-        Parameters(**kwargs)
+        Parameters(**cast(Any, kwargs))
 
 
 @pytest.mark.parametrize(
@@ -190,12 +197,12 @@ def test_rejects_non_finite_values(field_name: str, bad_value: int):
         {"wind_angle_degrees": 360.1},
     ],
 )
-def test_rejects_invalid_ranges(kwargs: dict[str, float]):
+def test_rejects_invalid_ranges(kwargs: dict[str, float]) -> None:
     with pytest.raises(ValueError):
-        Parameters(**kwargs)
+        Parameters(**cast(Any, kwargs))
 
 
-def test_accepts_valid_boundary_values():
+def test_accepts_valid_boundary_values() -> None:
     parameters = Parameters(
         initial_velocity=0.0,
         initial_angle_degrees=0.0,
@@ -213,7 +220,7 @@ def test_accepts_valid_boundary_values():
     assert parameters.wind_angle_degrees == 360.0
 
 
-def test_accepts_angle_90_degrees():
+def test_accepts_angle_90_degrees() -> None:
     params = Parameters(initial_angle_degrees=90.0)
 
     assert params.initial_angle_degrees == 90.0
@@ -221,7 +228,7 @@ def test_accepts_angle_90_degrees():
     assert params.vy0 == pytest.approx(params.initial_velocity)
 
 
-def test_accepts_wind_angle_360_degrees():
+def test_accepts_wind_angle_360_degrees() -> None:
     params = Parameters(
         wind_speed=10.0,
         wind_angle_degrees=360.0,
@@ -232,27 +239,27 @@ def test_accepts_wind_angle_360_degrees():
     assert params.wind_vy == pytest.approx(0.0)
 
 
-def test_rejects_zero_time_step():
+def test_rejects_zero_time_step() -> None:
     with pytest.raises(ValueError, match="time_step must be greater than zero."):
         Parameters(time_step=0.0)
 
 
-def test_rejects_negative_time_step():
+def test_rejects_negative_time_step() -> None:
     with pytest.raises(ValueError, match="time_step must be greater than zero."):
         Parameters(time_step=-0.01)
 
 
-def test_rejects_zero_time_max():
+def test_rejects_zero_time_max() -> None:
     with pytest.raises(ValueError):
         Parameters(time_max=0.0)
 
 
-def test_rejects_negative_time_max():
+def test_rejects_negative_time_max() -> None:
     with pytest.raises(ValueError):
         Parameters(time_max=-1.0)
 
 
-def test_rejects_too_many_simulation_steps():
+def test_rejects_too_many_simulation_steps() -> None:
     time_step = 0.01
     time_max = time_step * (MAX_SIMULATION_STEPS + 1)
 
@@ -263,7 +270,7 @@ def test_rejects_too_many_simulation_steps():
         )
 
 
-def test_accepts_exactly_maximum_simulation_steps():
+def test_accepts_exactly_maximum_simulation_steps() -> None:
     time_step = 0.01
     time_max = time_step * MAX_SIMULATION_STEPS
 
@@ -275,7 +282,7 @@ def test_accepts_exactly_maximum_simulation_steps():
     assert params.time_max / params.time_step == MAX_SIMULATION_STEPS
 
 
-def test_custom_initial_position_is_stored():
+def test_custom_initial_position_is_stored() -> None:
     params = Parameters(
         initial_x=12.5,
         initial_y=3.25,
@@ -285,7 +292,7 @@ def test_custom_initial_position_is_stored():
     assert params.initial_y == 3.25
 
 
-def test_dataclass_equality():
+def test_dataclass_equality() -> None:
     params_1 = Parameters()
     params_2 = Parameters()
     params_3 = Parameters(initial_velocity=60.0)
