@@ -112,7 +112,7 @@ def test_show_empty_plot_resets_axis(canvas: AnimationCanvas) -> None:
     assert any(line.get_visible() for line in canvas.axis.get_ygridlines())
 
 
-# Helper function for test_set_results() function
+# Helper function
 def make_projectile_results(final_time: float):
     return {
         "t": np.array([0.0, final_time], dtype=np.float64),
@@ -186,3 +186,103 @@ def test_set_results(
     assert canvas.start_button.isEnabled()
     assert not canvas.stop_button.isEnabled()
     assert canvas.reset_button.isEnabled()
+
+
+def test_draw_static_scene_returns_when_results_are_missing(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.axis.plot([0.0, 1.0], [0.0, 1.0])
+    assert len(canvas.axis.lines) == 1
+
+    canvas.draw_static_scene()
+
+    assert len(canvas.axis.lines) == 1
+    assert canvas.no_drag_point is None
+    assert canvas.linear_drag_point is None
+    assert canvas.quadratic_drag_point is None
+    assert canvas.time_text is None
+
+
+def test_draw_static_scene_draws_trajectories_and_points_without_vectors(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.no_drag = make_projectile_results(1.0)
+    canvas.linear_drag = make_projectile_results(2.0)
+    canvas.quadratic_drag = make_projectile_results(3.0)
+    canvas.parameters = Parameters()
+    canvas.show_vectors = False
+
+    expected_x_min, expected_x_max, expected_y_min, expected_y_max = (
+        canvas.get_axis_limits()
+    )
+
+    canvas.draw_static_scene()
+
+    assert canvas.no_drag_point is not None
+    assert canvas.linear_drag_point is not None
+    assert canvas.quadratic_drag_point is not None
+    assert canvas.time_text is not None
+
+    assert len(canvas.axis.lines) == 6
+
+    trajectory_labels = [line.get_label() for line in canvas.axis.lines[:3]]
+
+    assert trajectory_labels == [
+        "No drag",
+        "Linear drag",
+        "Quadratic drag RK4",
+    ]
+
+    assert canvas.no_drag_point.get_label() == "_nolegend_"
+    assert canvas.linear_drag_point.get_label() == "_nolegend_"
+    assert canvas.quadratic_drag_point.get_label() == "_nolegend_"
+
+    assert canvas.time_text.get_text() == ""
+
+    assert canvas.axis.get_title() == "Projectile motion playback"
+    assert canvas.axis.get_xlabel() == "x [m]"
+    assert canvas.axis.get_ylabel() == "y [m]"
+
+    assert canvas.axis.get_xlim() == pytest.approx((expected_x_min, expected_x_max))
+    assert canvas.axis.get_ylim() == pytest.approx((expected_y_min, expected_y_max))
+
+    assert canvas.wind_arrow is None
+    assert canvas.velocity_arrows == {}
+    assert canvas.velocity_text is None
+
+    legend = canvas.axis.get_legend()
+    assert legend is not None
+
+    legend_labels = [text.get_text() for text in legend.get_texts()]
+
+    assert legend_labels == [
+        "No drag",
+        "Linear drag",
+        "Quadratic drag RK4",
+    ]
+
+    assert any(line.get_visible() for line in canvas.axis.get_xgridlines())
+    assert any(line.get_visible() for line in canvas.axis.get_ygridlines())
+
+
+def test_draw_static_scene_draws_velocity_vectors_when_enabled(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.no_drag = make_projectile_results(1.0)
+    canvas.linear_drag = make_projectile_results(2.0)
+    canvas.quadratic_drag = make_projectile_results(3.0)
+    canvas.parameters = Parameters()
+    canvas.show_vectors = True
+
+    canvas.draw_static_scene()
+
+    assert frozenset(canvas.velocity_arrows.keys()) == frozenset(
+        {
+            "no_drag",
+            "linear_drag",
+            "quadratic_drag",
+        }
+    )
+
+    assert canvas.velocity_text is not None
+    assert canvas.wind_arrow is None
