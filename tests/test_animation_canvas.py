@@ -124,33 +124,24 @@ def make_projectile_results(final_time: float):
     }
 
 
-def test_set_results(canvas: AnimationCanvas) -> None:
+@pytest.mark.parametrize(
+    ("show_vectors", "expected_arrow_names", "expect_velocity_text"),
+    [
+        (False, frozenset[str](), False),
+        (True, {"no_drag", "linear_drag", "quadratic_drag"}, True),
+    ],
+)
+def test_set_results(
+    canvas: AnimationCanvas,
+    show_vectors: bool,
+    expected_arrow_names: frozenset[str],
+    expect_velocity_text: bool,
+) -> None:
     no_drag = make_projectile_results(1.0)
     linear_drag = make_projectile_results(2.0)
     quadratic_drag = make_projectile_results(3.0)
     parameters = Parameters()
 
-    canvas.set_results(
-        no_drag=no_drag,
-        linear_drag=linear_drag,
-        quadratic_drag=quadratic_drag,
-        parameters=parameters,
-        show_vectors=False,
-    )
-
-    assert canvas.no_drag == no_drag
-    assert canvas.linear_drag == linear_drag
-    assert canvas.quadratic_drag == quadratic_drag
-    assert canvas.parameters == parameters
-    assert canvas.show_vectors is False
-
-    assert isinstance(canvas.animation_time, np.ndarray)
-    assert canvas.animation_time.dtype == np.float64
-    assert canvas.animation_time.size == ANIMATION_FRAMES
-    assert canvas.animation_time[0] == 0.0
-    assert canvas.animation_time[-1] == pytest.approx(3.0)
-
-    assert canvas.frame_index == 0
     canvas.timer.start()
     assert canvas.timer.isActive()
 
@@ -159,8 +150,22 @@ def test_set_results(canvas: AnimationCanvas) -> None:
         linear_drag=linear_drag,
         quadratic_drag=quadratic_drag,
         parameters=parameters,
-        show_vectors=False,
+        show_vectors=show_vectors,
     )
+
+    assert canvas.no_drag is no_drag
+    assert canvas.linear_drag is linear_drag
+    assert canvas.quadratic_drag is quadratic_drag
+    assert canvas.parameters is parameters
+    assert canvas.show_vectors is show_vectors
+
+    assert isinstance(canvas.animation_time, np.ndarray)
+    assert canvas.animation_time.dtype == np.float64
+    assert canvas.animation_time.size == ANIMATION_FRAMES
+    assert canvas.animation_time[0] == 0.0
+    assert canvas.animation_time[-1] == pytest.approx(3.0)
+
+    assert canvas.frame_index == 0
     assert not canvas.timer.isActive()
 
     assert canvas.no_drag_point is not None
@@ -169,9 +174,14 @@ def test_set_results(canvas: AnimationCanvas) -> None:
     assert canvas.time_text is not None
     assert canvas.time_text.get_text() == "t = 0.00 s"
 
+    assert set(canvas.velocity_arrows.keys()) == expected_arrow_names
+
+    if expect_velocity_text:
+        assert canvas.velocity_text is not None
+    else:
+        assert canvas.velocity_text is None
+
     assert canvas.wind_arrow is None
-    assert canvas.velocity_arrows == {}
-    assert canvas.velocity_text is None
 
     assert canvas.start_button.isEnabled()
     assert not canvas.stop_button.isEnabled()
