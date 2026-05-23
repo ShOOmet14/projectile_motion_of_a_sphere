@@ -9,7 +9,12 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
-from src.gui.animation_canvas import AnimationCanvas, TIMER_INTERVAL_MS
+from src.gui.animation_canvas import (
+    AnimationCanvas,
+    TIMER_INTERVAL_MS,
+    ANIMATION_FRAMES,
+)
+from src.config.parameters import Parameters
 
 
 @pytest.fixture
@@ -105,3 +110,69 @@ def test_show_empty_plot_resets_axis(canvas: AnimationCanvas) -> None:
     assert canvas.axis.get_ylabel() == "y [m]"
     assert any(line.get_visible() for line in canvas.axis.get_xgridlines())
     assert any(line.get_visible() for line in canvas.axis.get_ygridlines())
+
+
+# Helper function for test_set_results() function
+def make_projectile_results(final_time: float):
+    return {
+        "t": np.array([0.0, final_time], dtype=np.float64),
+        "x": np.array([0.0, 10.0], dtype=np.float64),
+        "y": np.array([0.0, 5.0], dtype=np.float64),
+        "vx": np.array([10.0, 10.0], dtype=np.float64),
+        "vy": np.array([5.0, 0.0], dtype=np.float64),
+        "v": np.array([11.0, 10.0], dtype=np.float64),
+    }
+
+
+def test_set_results(canvas: AnimationCanvas) -> None:
+    no_drag = make_projectile_results(1.0)
+    linear_drag = make_projectile_results(2.0)
+    quadratic_drag = make_projectile_results(3.0)
+    parameters = Parameters()
+
+    canvas.set_results(
+        no_drag=no_drag,
+        linear_drag=linear_drag,
+        quadratic_drag=quadratic_drag,
+        parameters=parameters,
+        show_vectors=False,
+    )
+
+    assert canvas.no_drag == no_drag
+    assert canvas.linear_drag == linear_drag
+    assert canvas.quadratic_drag == quadratic_drag
+    assert canvas.parameters == parameters
+    assert canvas.show_vectors is False
+
+    assert isinstance(canvas.animation_time, np.ndarray)
+    assert canvas.animation_time.dtype == np.float64
+    assert canvas.animation_time.size == ANIMATION_FRAMES
+    assert canvas.animation_time[0] == 0.0
+    assert canvas.animation_time[-1] == pytest.approx(3.0)
+
+    assert canvas.frame_index == 0
+    canvas.timer.start()
+    assert canvas.timer.isActive()
+
+    canvas.set_results(
+        no_drag=no_drag,
+        linear_drag=linear_drag,
+        quadratic_drag=quadratic_drag,
+        parameters=parameters,
+        show_vectors=False,
+    )
+    assert not canvas.timer.isActive()
+
+    assert canvas.no_drag_point is not None
+    assert canvas.linear_drag_point is not None
+    assert canvas.quadratic_drag_point is not None
+    assert canvas.time_text is not None
+    assert canvas.time_text.get_text() == "t = 0.00 s"
+
+    assert canvas.wind_arrow is None
+    assert canvas.velocity_arrows == {}
+    assert canvas.velocity_text is None
+
+    assert canvas.start_button.isEnabled()
+    assert not canvas.stop_button.isEnabled()
+    assert canvas.reset_button.isEnabled()
