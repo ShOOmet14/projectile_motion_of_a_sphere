@@ -373,3 +373,120 @@ def test_draw_static_vectors_draws_wind_arrow_when_wind_speed_is_positive(
     assert "Wind: 5.0 m/s, 45°" in texts
 
     assert len(canvas.axis.patches) == 4
+
+
+def load_canvas_with_results(
+    canvas: AnimationCanvas, show_vectors: bool = False
+) -> None:
+    canvas.set_results(
+        no_drag=make_projectile_results(1.0),
+        linear_drag=make_projectile_results(2.0),
+        quadratic_drag=make_projectile_results(3.0),
+        parameters=Parameters(),
+        show_vectors=show_vectors,
+    )
+
+
+def test_start_animation_does_nothing_without_results(
+    canvas: AnimationCanvas,
+) -> None:
+    assert canvas.animation_time.size == 0
+
+    canvas.start_animation()
+
+    assert not canvas.timer.isActive()
+    assert not canvas.start_button.isEnabled()
+    assert not canvas.stop_button.isEnabled()
+    assert not canvas.reset_button.isEnabled()
+
+
+def test_start_animation_starts_timer_and_updates_buttons(
+    canvas: AnimationCanvas,
+) -> None:
+    load_canvas_with_results(canvas)
+
+    canvas.start_animation()
+
+    assert canvas.timer.isActive()
+    assert not canvas.start_button.isEnabled()
+    assert canvas.stop_button.isEnabled()
+    assert canvas.reset_button.isEnabled()
+
+
+def test_stop_animation_stops_timer_and_updates_buttons(
+    canvas: AnimationCanvas,
+) -> None:
+    load_canvas_with_results(canvas)
+    canvas.start_animation()
+
+    assert canvas.timer.isActive()
+
+    canvas.stop_animation()
+
+    assert not canvas.timer.isActive()
+    assert canvas.start_button.isEnabled()
+    assert not canvas.stop_button.isEnabled()
+    assert canvas.reset_button.isEnabled()
+
+
+def test_reset_animation_stops_timer_resets_frame_and_updates_buttons(
+    canvas: AnimationCanvas,
+) -> None:
+    load_canvas_with_results(canvas)
+    canvas.start_animation()
+
+    canvas.frame_index = 10
+    assert canvas.timer.isActive()
+
+    canvas.reset_animation()
+
+    assert not canvas.timer.isActive()
+    assert canvas.frame_index == 0
+
+    assert canvas.time_text is not None
+    assert canvas.time_text.get_text() == "t = 0.00 s"
+
+    assert canvas.start_button.isEnabled()
+    assert not canvas.stop_button.isEnabled()
+    assert canvas.reset_button.isEnabled()
+
+
+def test_update_frame_updates_points_and_increments_frame_index(
+    canvas: AnimationCanvas,
+) -> None:
+    load_canvas_with_results(canvas)
+
+    canvas.frame_index = 0
+
+    canvas.update_frame()
+
+    assert canvas.frame_index == 1
+
+    assert canvas.time_text is not None
+    assert canvas.time_text.get_text() == "t = 0.00 s"
+
+    assert canvas.no_drag_point is not None
+    x_data, y_data = canvas.no_drag_point.get_data()
+
+    x_values = np.asarray(x_data, dtype=np.float64)
+    y_values = np.asarray(y_data, dtype=np.float64)
+
+    assert x_values[0] == pytest.approx(0.0)
+    assert y_values[0] == pytest.approx(0.0)
+
+
+def test_update_frame_stops_animation_when_frame_index_is_finished(
+    canvas: AnimationCanvas,
+) -> None:
+    load_canvas_with_results(canvas)
+    canvas.start_animation()
+
+    assert canvas.timer.isActive()
+
+    canvas.frame_index = len(canvas.animation_time)
+
+    canvas.update_frame()
+
+    assert not canvas.timer.isActive()
+    assert canvas.start_button.isEnabled()
+    assert not canvas.stop_button.isEnabled()
