@@ -7,6 +7,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.lines import Line2D
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyArrowPatch
 
@@ -451,6 +452,15 @@ def test_reset_animation_stops_timer_resets_frame_and_updates_buttons(
     assert canvas.reset_button.isEnabled()
 
 
+def get_point_coordinates(point: Line2D) -> tuple[float, float]:
+    x_data, y_data = point.get_data()
+
+    x_values = np.asarray(x_data, dtype=np.float64)
+    y_values = np.asarray(y_data, dtype=np.float64)
+
+    return float(x_values[0]), float(y_values[0])
+
+
 def test_update_frame_updates_points_and_increments_frame_index(
     canvas: AnimationCanvas,
 ) -> None:
@@ -466,13 +476,10 @@ def test_update_frame_updates_points_and_increments_frame_index(
     assert canvas.time_text.get_text() == "t = 0.00 s"
 
     assert canvas.no_drag_point is not None
-    x_data, y_data = canvas.no_drag_point.get_data()
+    x_data, y_data = get_point_coordinates(canvas.no_drag_point)
 
-    x_values = np.asarray(x_data, dtype=np.float64)
-    y_values = np.asarray(y_data, dtype=np.float64)
-
-    assert x_values[0] == pytest.approx(0.0)
-    assert y_values[0] == pytest.approx(0.0)
+    assert x_data == pytest.approx(0.0)
+    assert y_data == pytest.approx(0.0)
 
 
 def test_update_frame_stops_animation_when_frame_index_is_finished(
@@ -490,3 +497,82 @@ def test_update_frame_stops_animation_when_frame_index_is_finished(
     assert not canvas.timer.isActive()
     assert canvas.start_button.isEnabled()
     assert not canvas.stop_button.isEnabled()
+
+
+def test_update_points_returns_when_required_data_is_missing(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.update_points(0.5)
+
+    assert canvas.no_drag_point is None
+    assert canvas.linear_drag_point is None
+    assert canvas.quadratic_drag_point is None
+    assert canvas.time_text is None
+
+
+def test_update_points_updates_marker_positions_and_time_text(
+    canvas: AnimationCanvas,
+) -> None:
+    no_drag = make_projectile_results(1.0)
+    linear_drag = make_projectile_results(2.0)
+    quadratic_drag = make_projectile_results(3.0)
+
+    canvas.set_results(
+        no_drag=no_drag,
+        linear_drag=linear_drag,
+        quadratic_drag=quadratic_drag,
+        parameters=Parameters(),
+        show_vectors=False,
+    )
+
+    canvas.update_points(0.5)
+
+    assert canvas.no_drag_point is not None
+    assert canvas.linear_drag_point is not None
+    assert canvas.quadratic_drag_point is not None
+    assert canvas.time_text is not None
+
+    no_drag_x, no_drag_y = get_point_coordinates(canvas.no_drag_point)
+    linear_x, linear_y = get_point_coordinates(canvas.linear_drag_point)
+    quadratic_x, quadratic_y = get_point_coordinates(canvas.quadratic_drag_point)
+
+    assert no_drag_x == pytest.approx(5.0)
+    assert no_drag_y == pytest.approx(2.5)
+
+    assert linear_x == pytest.approx(2.5)
+    assert linear_y == pytest.approx(1.25)
+
+    assert quadratic_x == pytest.approx(1.6666666667)
+    assert quadratic_y == pytest.approx(0.8333333333)
+
+    assert canvas.time_text.get_text() == "t = 0.50 s"
+
+
+def test_update_points_updates_velocity_text_when_vectors_are_enabled(
+    canvas: AnimationCanvas,
+) -> None:
+    no_drag = make_projectile_results(1.0)
+    linear_drag = make_projectile_results(2.0)
+    quadratic_drag = make_projectile_results(3.0)
+
+    canvas.set_results(
+        no_drag=no_drag,
+        linear_drag=linear_drag,
+        quadratic_drag=quadratic_drag,
+        parameters=Parameters(),
+        show_vectors=True,
+    )
+
+    canvas.update_points(0.5)
+
+    assert canvas.velocity_text is not None
+
+    velocity_text = canvas.velocity_text.get_text()
+
+    assert "Velocity components" in velocity_text
+    assert "No drag:" in velocity_text
+    assert "Linear:" in velocity_text
+    assert "Quad:" in velocity_text
+    assert "Wind:" in velocity_text
+
+    assert "vx=10.00" in velocity_text
