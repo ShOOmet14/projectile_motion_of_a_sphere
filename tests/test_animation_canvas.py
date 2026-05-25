@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from matplotlib.patches import FancyArrowPatch
 
 from src.gui.animation_canvas import (
     AnimationCanvas,
@@ -286,3 +287,89 @@ def test_draw_static_scene_draws_velocity_vectors_when_enabled(
 
     assert canvas.velocity_text is not None
     assert canvas.wind_arrow is None
+
+
+def test_draw_static_vectors_returns_when_required_data_is_missing(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.draw_static_vectors()
+
+    assert canvas.wind_arrow is None
+    assert canvas.velocity_arrows == {}
+    assert canvas.velocity_text is None
+    assert len(canvas.axis.patches) == 0
+
+
+def test_draw_static_vectors_draws_velocity_arrows_without_wind(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.no_drag = make_projectile_results(1.0)
+    canvas.linear_drag = make_projectile_results(2.0)
+    canvas.quadratic_drag = make_projectile_results(3.0)
+    canvas.parameters = Parameters(wind_speed=0.0)
+
+    expected_x_min, expected_x_max, _, _ = canvas.get_axis_limits()
+    expected_x_range = max(expected_x_max - expected_x_min, 1.0)
+
+    expected_max_speed = max(
+        float(np.max(canvas.no_drag["v"])),
+        float(np.max(canvas.linear_drag["v"])),
+        float(np.max(canvas.quadratic_drag["v"])),
+        1.0,
+    )
+
+    expected_velocity_scale = 0.08 * expected_x_range / expected_max_speed
+
+    canvas.draw_static_vectors()
+
+    assert canvas.wind_arrow is None
+
+    assert frozenset(canvas.velocity_arrows.keys()) == frozenset(
+        {
+            "no_drag",
+            "linear_drag",
+            "quadratic_drag",
+        }
+    )
+
+    assert all(
+        isinstance(arrow, FancyArrowPatch) for arrow in canvas.velocity_arrows.values()
+    )
+
+    assert canvas.velocity_text is not None
+    assert canvas.velocity_text.get_text() == ""
+    assert canvas.velocity_scale == pytest.approx(expected_velocity_scale)
+
+    assert len(canvas.axis.patches) == 3
+
+
+def test_draw_static_vectors_draws_wind_arrow_when_wind_speed_is_positive(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.no_drag = make_projectile_results(1.0)
+    canvas.linear_drag = make_projectile_results(2.0)
+    canvas.quadratic_drag = make_projectile_results(3.0)
+    canvas.parameters = Parameters(
+        wind_speed=5.0,
+        wind_angle_degrees=45.0,
+    )
+
+    canvas.draw_static_vectors()
+
+    assert isinstance(canvas.wind_arrow, FancyArrowPatch)
+
+    assert frozenset(canvas.velocity_arrows.keys()) == frozenset(
+        {
+            "no_drag",
+            "linear_drag",
+            "quadratic_drag",
+        }
+    )
+
+    assert canvas.velocity_text is not None
+
+    texts = [text.get_text() for text in canvas.axis.texts]
+
+    assert "Wind: 5.0 m/s, 45°" in texts
+
+    assert len(canvas.axis.patches) == 4
