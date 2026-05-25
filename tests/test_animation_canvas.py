@@ -1,5 +1,6 @@
 import pytest
 from pytestqt.qtbot import QtBot
+from unittest.mock import Mock
 
 import numpy as np
 
@@ -17,6 +18,7 @@ from src.gui.animation_canvas import (
     ANIMATION_FRAMES,
 )
 from src.config.parameters import Parameters
+from src.simulation.solve import ProjectileResult
 
 
 @pytest.fixture
@@ -115,7 +117,7 @@ def test_show_empty_plot_resets_axis(canvas: AnimationCanvas) -> None:
 
 
 # Helper function
-def make_projectile_results(final_time: float):
+def make_projectile_results(final_time: float) -> ProjectileResult:
     return {
         "t": np.array([0.0, final_time], dtype=np.float64),
         "x": np.array([0.0, 10.0], dtype=np.float64),
@@ -130,7 +132,7 @@ def make_projectile_results(final_time: float):
     ("show_vectors", "expected_arrow_names", "expect_velocity_text"),
     [
         (False, frozenset[str](), False),
-        (True, {"no_drag", "linear_drag", "quadratic_drag"}, True),
+        (True, frozenset({"no_drag", "linear_drag", "quadratic_drag"}), True),
     ],
 )
 def test_set_results(
@@ -176,7 +178,7 @@ def test_set_results(
     assert canvas.time_text is not None
     assert canvas.time_text.get_text() == "t = 0.00 s"
 
-    assert set(canvas.velocity_arrows.keys()) == expected_arrow_names
+    assert frozenset(canvas.velocity_arrows.keys()) == expected_arrow_names
 
     if expect_velocity_text:
         assert canvas.velocity_text is not None
@@ -413,6 +415,8 @@ def test_start_animation_starts_timer_and_updates_buttons(
     assert canvas.stop_button.isEnabled()
     assert canvas.reset_button.isEnabled()
 
+    canvas.stop_animation()
+
 
 def test_stop_animation_stops_timer_and_updates_buttons(
     canvas: AnimationCanvas,
@@ -576,3 +580,122 @@ def test_update_points_updates_velocity_text_when_vectors_are_enabled(
     assert "Wind:" in velocity_text
 
     assert "vx=10.00" in velocity_text
+
+
+def test_get_interpolated_position(canvas: AnimationCanvas) -> None:
+    result = {
+        "t": np.array([0.0, 1.0, 2.0], dtype=np.float64),
+        "x": np.array([0.0, 10.0, 20.0], dtype=np.float64),
+        "y": np.array([0.0, 5.0, 10.0], dtype=np.float64),
+        "vx": np.array([0.0, 0.0, 0.0], dtype=np.float64),
+        "vy": np.array([0.0, 0.0, 0.0], dtype=np.float64),
+        "v": np.array([0.0, 0.0, 0.0], dtype=np.float64),
+    }
+
+    x, y = canvas.get_interpolated_position(result, 0.5)
+
+    assert x == pytest.approx(5.0)
+    assert y == pytest.approx(2.5)
+
+
+def test_get_interpolated_velocity(canvas: AnimationCanvas) -> None:
+    result = {
+        "t": np.array([0.0, 1.0, 2.0], dtype=np.float64),
+        "x": np.array([0.0, 0.0, 0.0], dtype=np.float64),
+        "y": np.array([0.0, 0.0, 0.0], dtype=np.float64),
+        "vx": np.array([10.0, 20.0, 30.0], dtype=np.float64),
+        "vy": np.array([5.0, 10.0, 15.0], dtype=np.float64),
+        "v": np.array([0.0, 0.0, 0.0], dtype=np.float64),
+    }
+
+    vx, vy = canvas.get_interpolated_velocity(result, 1.5)
+
+    assert vx == pytest.approx(25.0)
+    assert vy == pytest.approx(12.5)
+
+
+def test_update_velocity_arrow_returns_when_arrow_does_not_exist(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.velocity_arrows = {}
+
+    canvas.update_velocity_arrow(
+        name="missing_arrow",
+        x=1.0,
+        y=2.0,
+        vx=3.0,
+        vy=4.0,
+    )
+
+    assert canvas.velocity_arrows == {}
+
+
+def test_update_velocity_arrow_sets_arrow_positions(
+    canvas: AnimationCanvas,
+) -> None:
+    arrow = Mock(spec=FancyArrowPatch)
+
+    canvas.velocity_arrows["test"] = arrow
+    canvas.velocity_scale = 0.5
+
+    canvas.update_velocity_arrow(
+        name="test",
+        x=2.0,
+        y=3.0,
+        vx=4.0,
+        vy=6.0,
+    )
+
+    arrow.set_positions.assert_called_once_with(
+        (2.0, 3.0),
+        (4.0, 6.0),
+    )
+
+
+def test_get_axis_limits_returns_default_limits_without_results(
+    canvas: AnimationCanvas,
+) -> None:
+    assert canvas.get_axis_limits() == (
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+    )
+
+
+def test_get_axis_limits_uses_all_results_with_margins(
+    canvas: AnimationCanvas,
+) -> None:
+    canvas.no_drag = {
+        "t": np.array([0.0, 1.0], dtype=np.float64),
+        "x": np.array([0.0, 10.0], dtype=np.float64),
+        "y": np.array([0.0, 5.0], dtype=np.float64),
+        "vx": np.array([0.0, 0.0], dtype=np.float64),
+        "vy": np.array([0.0, 0.0], dtype=np.float64),
+        "v": np.array([0.0, 0.0], dtype=np.float64),
+    }
+
+    canvas.linear_drag = {
+        "t": np.array([0.0, 1.0], dtype=np.float64),
+        "x": np.array([-2.0, 8.0], dtype=np.float64),
+        "y": np.array([-1.0, 4.0], dtype=np.float64),
+        "vx": np.array([0.0, 0.0], dtype=np.float64),
+        "vy": np.array([0.0, 0.0], dtype=np.float64),
+        "v": np.array([0.0, 0.0], dtype=np.float64),
+    }
+
+    canvas.quadratic_drag = {
+        "t": np.array([0.0, 1.0], dtype=np.float64),
+        "x": np.array([1.0, 12.0], dtype=np.float64),
+        "y": np.array([0.0, 7.0], dtype=np.float64),
+        "vx": np.array([0.0, 0.0], dtype=np.float64),
+        "vy": np.array([0.0, 0.0], dtype=np.float64),
+        "v": np.array([0.0, 0.0], dtype=np.float64),
+    }
+
+    x_min, x_max, y_min, y_max = canvas.get_axis_limits()
+
+    assert x_min == pytest.approx(-2.84)
+    assert x_max == pytest.approx(12.84)
+    assert y_min == pytest.approx(-1.8)
+    assert y_max == pytest.approx(7.8)
