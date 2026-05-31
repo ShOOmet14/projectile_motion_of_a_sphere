@@ -1,0 +1,104 @@
+import pytest
+from pytestqt.qtbot import QtBot
+
+from src.config.parameters import DEFAULT_PARAMETERS, Parameters
+from src.gui.parameter_panel import ParameterPanel
+
+
+@pytest.fixture
+def panel(qtbot: QtBot) -> ParameterPanel:
+    widget = ParameterPanel()
+    qtbot.addWidget(widget)
+
+    return widget
+
+
+def test_initialization_uses_default_parameters(panel: ParameterPanel) -> None:
+    assert panel.objectName() == "parameterPanel"
+    assert panel.minimumWidth() == 430
+
+    assert panel.get_parameters() == DEFAULT_PARAMETERS
+    assert panel.theme_input.currentText() == "light"
+    assert panel.should_show_vectors() is True
+
+
+def test_initialization_uses_given_parameters_and_theme(qtbot: QtBot) -> None:
+    parameters = Parameters(
+        initial_velocity=12.5,
+        initial_angle_degrees=30.0,
+        mass=2.0,
+        radius=0.5,
+        drag_coefficient=0.2,
+        air_density=1.1,
+        linear_drag=0.3,
+        time_step=0.02,
+        time_max=20.0,
+        g=9.81,
+        wind_speed=4.0,
+        wind_angle_degrees=180.0,
+    )
+
+    panel = ParameterPanel(parameters=parameters, theme="dark")
+    qtbot.addWidget(panel)
+
+    assert panel.get_parameters() == parameters
+    assert panel.theme_input.currentText() == "dark"
+
+
+def test_get_parameters_reads_current_input_values(panel: ParameterPanel) -> None:
+    panel.velocity_input.setValue(24.0)
+    panel.angle_input.setValue(35.0)
+    panel.mass_input.setValue(1.5)
+    panel.radius_input.setValue(0.25)
+    panel.drag_coefficient_input.setValue(0.4)
+    panel.air_density_input.setValue(1.0)
+    panel.linear_drag_coefficient_input.setValue(0.1)
+    panel.dt_input.setValue(0.05)
+    panel.t_max_input.setValue(15.0)
+    panel.gravity_input.setValue(9.81)
+    panel.wind_speed_input.setValue(3.0)
+    panel.wind_angle_input.setValue(90.0)
+
+    assert panel.get_parameters() == Parameters(
+        initial_velocity=24.0,
+        initial_angle_degrees=35.0,
+        mass=1.5,
+        radius=0.25,
+        drag_coefficient=0.4,
+        air_density=1.0,
+        linear_drag=0.1,
+        time_step=0.05,
+        time_max=15.0,
+        g=9.81,
+        wind_speed=3.0,
+        wind_angle_degrees=90.0,
+    )
+
+
+def test_set_parameters_updates_all_inputs(panel: ParameterPanel) -> None:
+    parameters = Parameters(
+        initial_velocity=10.0,
+        initial_angle_degrees=20.0,
+        mass=0.5,
+        radius=0.1,
+        drag_coefficient=0.3,
+        air_density=1.0,
+        linear_drag=0.05,
+        time_step=0.02,
+        time_max=5.0,
+        g=9.8,
+        wind_speed=2.0,
+        wind_angle_degrees=270.0,
+    )
+
+    panel.set_parameters(parameters)
+
+    assert panel.get_parameters() == parameters
+
+
+def test_should_show_vectors_reads_checkbox_state(panel: ParameterPanel) -> None:
+    panel.show_vectors_checkbox.setChecked(False)
+    assert panel.should_show_vectors() is False
+
+    panel.show_vectors_checkbox.setChecked(True)
+    assert panel.should_show_vectors() is True
