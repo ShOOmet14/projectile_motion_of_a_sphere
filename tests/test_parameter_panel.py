@@ -102,3 +102,49 @@ def test_should_show_vectors_reads_checkbox_state(panel: ParameterPanel) -> None
 
     panel.show_vectors_checkbox.setChecked(True)
     assert panel.should_show_vectors() is True
+
+
+@pytest.mark.parametrize(
+    (
+        "input_name",
+        "expected_minimum",
+        "expected_maximum",
+        "expected_step",
+        "expected_decimals",
+        "expected_suffix",
+    ),
+    [
+        ("velocity_input", 0.0, 1000.0, 1.0, 2, " m/s"),
+        ("angle_input", 0.0, 90.0, 0.1, 1, " °"),
+        ("mass_input", 0.001, 100.0, 0.01, 3, " kg"),
+        ("radius_input", 0.001, 10.0, 0.001, 4, " m"),
+        ("drag_coefficient_input", 0.0, 5.0, 0.01, 3, ""),
+        ("air_density_input", 0.0, 10.0, 0.001, 4, " kg/m³"),
+        ("linear_drag_coefficient_input", 0.0001, 10.0, 0.01, 4, ""),
+        ("dt_input", 0.0001, 1.0, 0.001, 4, " s"),
+        ("t_max_input", 1.0, 1000.0, 1.0, 2, " s"),
+        ("gravity_input", 0.1, 100.0, 0.01, 5, " m/s²"),
+        ("wind_speed_input", 0.0, 200.0, 1.0, 2, " m/s"),
+        ("wind_angle_input", 0.0, 360.0, 5.0, 1, " °"),
+    ],
+)
+def test_numeric_input_configuration(
+    panel: ParameterPanel,
+    input_name: str,
+    expected_minimum: float,
+    expected_maximum: float,
+    expected_step: float,
+    expected_decimals: int,
+    expected_suffix: str,
+) -> None:
+    input_widget = getattr(panel, input_name)
+
+    assert input_widget.minimum() == pytest.approx(expected_minimum)
+    assert input_widget.maximum() == pytest.approx(expected_maximum)
+    assert input_widget.singleStep() == pytest.approx(expected_step)
+    assert input_widget.decimals() == expected_decimals
+    assert input_widget.suffix() == expected_suffix
+
+
+def test_wind_angle_input_wraps_around(panel: ParameterPanel) -> None:
+    assert panel.wind_angle_input.wrapping() is True
