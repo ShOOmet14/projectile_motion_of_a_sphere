@@ -1,24 +1,22 @@
+from csv import reader
 from pathlib import Path
 from unittest.mock import Mock
 
-from pytest import MonkeyPatch
-
 import numpy as np
-import pandas as pd
-from pandas.testing import assert_frame_equal
+import pytest
 
+from src.simulation.solve import ProjectileResult
 from src.storage import csv_export
 from src.storage.csv_export import (
     export_simulation_results_to_csv,
-    result_to_dataframe,
     save_result_to_csv,
 )
 
 
-COLUMNS = ["t", "x", "y", "vx", "vy", "v", "Ek", "Ep", "E"]
+CSV_HEADER = ["t", "x", "y", "vx", "vy", "v", "Ek", "Ep", "E"]
 
 
-def make_projectile_result(offset: float = 0.0) -> dict[str, np.ndarray]:
+def make_projectile_result(offset: float = 0.0) -> ProjectileResult:
     return {
         "t": np.array([0.0, 0.5, 1.0], dtype=np.float64),
         "x": np.array([0.0, 2.0, 4.0], dtype=np.float64) + offset,
@@ -32,34 +30,14 @@ def make_projectile_result(offset: float = 0.0) -> dict[str, np.ndarray]:
     }
 
 
-def test_result_to_dataframe_preserves_expected_columns_and_values() -> None:
-    result = make_projectile_result()
-
-    dataframe = result_to_dataframe(result)
-
-    expected = pd.DataFrame({column: result[column] for column in COLUMNS})
-    assert_frame_equal(dataframe, expected)
-    assert list(dataframe.columns) == COLUMNS
-
-
-def test_save_result_to_csv_writes_values_without_dataframe_index(
-    tmp_path: Path,
-) -> None:
-    result = make_projectile_result()
-    output_path = tmp_path / "trajectory.csv"
-
-    save_result_to_csv(output_path, result)
-
-    assert output_path.exists()
-    dataframe = pd.read_csv(output_path)
-    expected = result_to_dataframe(result)
-    assert_frame_equal(dataframe, expected)
-    assert "Unnamed: 0" not in dataframe.columns
+def read_csv_rows(path: Path) -> list[list[str]]:
+    with path.open("r", encoding="utf-8", newline="") as file:
+        return list(reader(file))
 
 
 def test_export_simulation_results_creates_directory_and_delegates_named_files(
     tmp_path: Path,
-    monkeypatch: MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     no_drag = make_projectile_result(1.0)
     linear_drag = make_projectile_result(2.0)
@@ -97,13 +75,87 @@ def test_export_simulation_results_writes_all_csv_files(tmp_path: Path) -> None:
         str(output_directory),
     )
 
-    expected_results = {
-        "no_drag.csv": no_drag,
-        "linear_drag.csv": linear_drag,
-        "quadratic_drag_rk4.csv": quadratic_drag,
+    assert {path.name for path in output_directory.iterdir()} == {
+        "no_drag.csv",
+        "linear_drag.csv",
+        "quadratic_drag_rk4.csv",
     }
-    assert {path.name for path in output_directory.iterdir()} == set(expected_results)
 
-    for filename, result in expected_results.items():
-        dataframe = pd.read_csv(output_directory / filename)
-        assert_frame_equal(dataframe, result_to_dataframe(result))
+    for filename in (
+        "no_drag.csv",
+        "linear_drag.csv",
+        "quadratic_drag_rk4.csv",
+    ):
+        rows = read_csv_rows(output_directory / filename)
+
+        assert rows[0] == CSV_HEADER
+        assert len(rows) == 4
+
+
+def test_export_simulation_results_creates_nested_output_directory(
+    tmp_path: Path,
+) -> None:
+    no_drag = make_projectile_result(1.0)
+    linear_drag = make_projectile_result(2.0)
+    quadratic_drag = make_projectile_result(3.0)
+
+    output_directory = tmp_path / "exports" / "csv" / "results"
+
+    export_simulation_results_to_csv(
+        no_drag,
+        linear_drag,
+        quadratic_drag,
+        output_directory,
+    )
+
+    assert output_directory.is_dir()
+    assert {path.name for path in output_directory.iterdir()} == {
+        "no_drag.csv",
+        "linear_drag.csv",
+        "quadratic_drag_rk4.csv",
+    }
+
+
+def test_save_result_to_csv_writes_header_and_values(
+    tmp_path: Path,
+) -> None:
+    result = make_projectile_result()
+    output_path = tmp_path / "trajectory.csv"
+
+    save_result_to_csv(output_path, result)
+
+    assert output_path.exists()
+    assert read_csv_rows(output_path) == [
+        CSV_HEADER,
+        ["0.0", "0.0", "1.0", "4.0", "3.0", "5.0", "25.0", "10.0", "35.0"],
+        ["0.5", "2.0", "2.0", "4.0", "-2.0", "4.5", "20.25", "20.0", "40.25"],
+        ["1.0", "4.0", "0.0", "4.0", "-7.0", "8.0", "64.0", "0.0", "64.0"],
+    ]
+
+
+def test_save_result_to_csv_rejects_arrays_with_different_lengths(
+    tmp_path: Path,
+) -> None:
+    result = make_projectile_result()
+    result["x"] = np.array([0.0, 2.0], dtype=np.float64)
+
+    output_path = tmp_path / "trajectory.csv"
+
+    with pytest.raises(
+        ValueError,
+        match="Projectile result arrays must have equal lengths",
+    ):
+        save_result_to_csv(output_path, result)
+
+    assert not output_path.exists()
+
+
+def test_save_result_to_csv_creates_parent_directories(
+    tmp_path: Path,
+) -> None:
+    result = make_projectile_result()
+    output_path = tmp_path / "exports" / "csv" / "trajectory.csv"
+
+    save_result_to_csv(output_path, result)
+
+    assert output_path.is_file()
