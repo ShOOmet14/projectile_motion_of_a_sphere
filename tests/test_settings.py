@@ -356,3 +356,16 @@ def test_default_stylesheet_paths_point_to_existing_files() -> None:
     assert settings.BASE_STYLE_PATH.is_file()
     assert settings.LIGHT_STYLE_PATH.is_file()
     assert settings.DARK_STYLE_PATH.is_file()
+
+
+def test_save_and_load_user_settings_preserves_initial_position(
+    settings_paths: dict[str, Path],
+) -> None:
+    parameters = Parameters(
+        initial_x=12.5,
+        initial_y=3.25,
+    )
+
+    settings.save_user_settings(parameters)
+
+    assert settings.load_user_settings() == parameters

@@ -36,6 +36,8 @@ SETTINGS_KEYS = (
     "g",
     "wind_speed",
     "wind_angle_deg",
+    "initial_x",
+    "initial_y",
 )
 
 
@@ -117,6 +119,8 @@ def parameters_to_settings_dict(parameters: Parameters) -> dict[str, float]:
         "g": float(parameters.g),
         "wind_speed": float(parameters.wind_speed),
         "wind_angle_deg": float(parameters.wind_angle_degrees),
+        "initial_x": float(parameters.initial_x),
+        "initial_y": float(parameters.initial_y),
     }
 
 
@@ -134,6 +138,8 @@ def settings_dict_to_parameters(settings: dict[str, float]) -> Parameters:
         g=settings["g"],
         wind_speed=settings["wind_speed"],
         wind_angle_degrees=settings["wind_angle_deg"],
+        initial_x=settings["initial_x"],
+        initial_y=settings["initial_y"],
     )
 
 
