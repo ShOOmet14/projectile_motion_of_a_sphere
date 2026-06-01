@@ -299,3 +299,8 @@ def test_dataclass_equality() -> None:
 
     assert params_1 == params_2
     assert params_1 != params_3
+
+
+def test_negative_initial_y_is_rejected() -> None:
+    with pytest.raises(ValueError, match="initial_y"):
+        Parameters(initial_y=-1.0)

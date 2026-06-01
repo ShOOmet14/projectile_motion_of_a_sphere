@@ -128,6 +128,9 @@ class Parameters:
     def _validate_ranges(self) -> None:
         """Reject parameter values outside the supported physical ranges."""
 
+        if self.initial_y < 0:
+            raise ValueError("initial_y must be greater than or equal to zero.")
+
         if self.initial_velocity < 0:
             raise ValueError("initial_velocity must be greater than or equal to zero.")
 
