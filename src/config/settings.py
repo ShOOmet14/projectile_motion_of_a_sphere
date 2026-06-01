@@ -9,12 +9,12 @@ from src.config.parameters import DEFAULT_PARAMETERS, Parameters
 ThemeName = Literal["light", "dark"]
 
 CONFIG_DIR = Path(__file__).resolve().parent
-PROJECT_DIR = CONFIG_DIR.parent
+PROJECT_ROOT = CONFIG_DIR.parent.parent
 
 APP_SETTINGS_PATH = CONFIG_DIR / "app_settings.json"
 USER_SETTINGS_PATH = CONFIG_DIR / "user_settings.json"
 
-STYLE_DIR = PROJECT_DIR / "style"
+STYLE_DIR = PROJECT_ROOT / "style"
 BASE_STYLE_PATH = STYLE_DIR / "style.css"
 LIGHT_STYLE_PATH = STYLE_DIR / "light.css"
 DARK_STYLE_PATH = STYLE_DIR / "dark.css"

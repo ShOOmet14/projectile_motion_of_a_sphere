@@ -350,3 +350,9 @@ def test_save_and_load_user_settings_round_trip(
     settings.save_user_settings(parameters)
 
     assert settings.load_user_settings() == parameters
+
+
+def test_default_stylesheet_paths_point_to_existing_files() -> None:
+    assert settings.BASE_STYLE_PATH.is_file()
+    assert settings.LIGHT_STYLE_PATH.is_file()
+    assert settings.DARK_STYLE_PATH.is_file()
