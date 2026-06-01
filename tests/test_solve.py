@@ -1,27 +1,55 @@
+from collections.abc import Callable
+from typing import Literal
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
 from src.config.parameters import Parameters
 from src.simulation.solve import (
+    ProjectileResult,
     calculate_kinetic_energy,
     calculate_mechanical_energy,
     calculate_position_linear_drag,
     calculate_position_no_drag,
     calculate_potential_energy,
+    calculate_quadratic_drag_derivative,
     calculate_speed,
-    calculate_state_quadratic_drag,
     calculate_velocity_linear_drag,
     calculate_velocity_no_drag,
     interpolate_value_at_ground,
-    runge_kutta_method,
+    runge_kutta_step,
     solve_projectile_motion_linear_drag,
     solve_projectile_motion_no_drag,
     solve_projectile_motion_quadratic_drag,
 )
 
 
-RESULT_KEYS = {"t", "x", "y", "vx", "vy", "v", "Ek", "Ep", "E"}
+ProjectileResultKey = Literal[
+    "t",
+    "x",
+    "y",
+    "vx",
+    "vy",
+    "v",
+    "Ek",
+    "Ep",
+    "E",
+]
+
+Solver = Callable[[Parameters], ProjectileResult]
+
+RESULT_KEYS: tuple[ProjectileResultKey, ...] = (
+    "t",
+    "x",
+    "y",
+    "vx",
+    "vy",
+    "v",
+    "Ek",
+    "Ep",
+    "E",
+)
 
 
 def make_parameters(**overrides: float) -> Parameters:
@@ -45,19 +73,21 @@ def make_parameters(**overrides: float) -> Parameters:
     return Parameters(**values)
 
 
-def assert_valid_projectile_result(result: dict[str, np.ndarray]) -> None:
-    assert set(result) == RESULT_KEYS
+def assert_valid_projectile_result(result: ProjectileResult) -> None:
+    assert set(result) == set(RESULT_KEYS)
 
-    lengths = {len(values) for values in result.values()}
+    arrays = tuple(result[key] for key in RESULT_KEYS)
+
+    lengths = {len(values) for values in arrays}
     assert len(lengths) == 1
-    assert lengths.pop() >= 2
+    assert lengths.pop() >= 1
 
-    for values in result.values():
+    for values in arrays:
         assert values.dtype == np.float64
         assert np.all(np.isfinite(values))
 
     assert result["t"][0] == pytest.approx(0.0)
-    assert np.all(np.diff(result["t"]) >= 0.0)
+    assert np.all(np.diff(result["t"]) > 0.0)
     assert result["y"][-1] == pytest.approx(0.0)
     assert np.all(result["y"] >= 0.0)
 
@@ -131,10 +161,10 @@ def test_calculate_velocity_linear_drag_with_wind() -> None:
     assert_allclose(vy, np.array([5.0, -5.23020285, -11.43513453]))
 
 
-def test_calculate_state_quadratic_drag_uses_relative_velocity() -> None:
+def test_calculate_quadratic_drag_derivative_uses_relative_velocity() -> None:
     state = np.array([10.0, 20.0, 5.0, -1.0], dtype=np.float64)
 
-    derivative = calculate_state_quadratic_drag(
+    derivative = calculate_quadratic_drag_derivative(
         state=state,
         q=0.5,
         g=10.0,
@@ -147,10 +177,10 @@ def test_calculate_state_quadratic_drag_uses_relative_velocity() -> None:
     assert relative_speed == pytest.approx(np.hypot(3.0, 4.0))
 
 
-def test_runge_kutta_method_is_exact_for_constant_acceleration() -> None:
+def test_runge_kutta_step_is_exact_for_constant_acceleration() -> None:
     state = np.array([1.0, 2.0, 4.0, 5.0], dtype=np.float64)
 
-    state_new = runge_kutta_method(
+    state_new = runge_kutta_step(
         state_old=state,
         dt=0.5,
         q=0.0,
@@ -253,8 +283,14 @@ def test_quadratic_drag_solver_matches_no_drag_solver_when_drag_is_zero() -> Non
     quadratic_drag = solve_projectile_motion_quadratic_drag(parameters)
 
     assert set(quadratic_drag) == set(no_drag)
-    for key in no_drag:
-        assert_allclose(quadratic_drag[key], no_drag[key], rtol=1e-12, atol=1e-12)
+
+    for key in RESULT_KEYS:
+        assert_allclose(
+            quadratic_drag[key],
+            no_drag[key],
+            rtol=1e-12,
+            atol=1e-12,
+        )
 
 
 @pytest.mark.parametrize(
@@ -275,7 +311,7 @@ def test_quadratic_drag_solver_matches_no_drag_solver_when_drag_is_zero() -> Non
     ],
 )
 def test_solver_raises_when_projectile_does_not_hit_ground_before_time_max(
-    solver: object,
+    solver: Solver,
     message: str,
 ) -> None:
     parameters = make_parameters(
@@ -286,4 +322,33 @@ def test_solver_raises_when_projectile_does_not_hit_ground_before_time_max(
     )
 
     with pytest.raises(ValueError, match=message):
-        solver(parameters)  # type: ignore[operator]
+        solver(parameters)
+
+
+@pytest.mark.parametrize(
+    "solver",
+    [
+        solve_projectile_motion_no_drag,
+        solve_projectile_motion_linear_drag,
+        solve_projectile_motion_quadratic_drag,
+    ],
+)
+def test_solver_returns_single_sample_for_horizontal_launch_from_ground(
+    solver: Solver,
+) -> None:
+    parameters = make_parameters(
+        initial_angle_degrees=0.0,
+        initial_y=0.0,
+    )
+
+    result = solver(parameters)
+
+    assert_valid_projectile_result(result)
+    assert_array_equal(
+        result["t"],
+        np.array([0.0], dtype=np.float64),
+    )
+    assert_array_equal(
+        result["y"],
+        np.array([0.0], dtype=np.float64),
+    )
