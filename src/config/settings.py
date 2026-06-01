@@ -1,5 +1,6 @@
-import json
+"""Manage theme preferences, stylesheets, and saved simulation parameters."""
 
+import json
 from pathlib import Path
 from typing import Literal, TypeGuard
 
@@ -8,22 +9,22 @@ from src.config.parameters import DEFAULT_PARAMETERS, Parameters
 
 ThemeName = Literal["light", "dark"]
 
-CONFIG_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CONFIG_DIR.parent.parent
+_CONFIG_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _CONFIG_DIR.parent.parent
+_STYLE_DIR = _PROJECT_ROOT / "style"
 
-APP_SETTINGS_PATH = CONFIG_DIR / "app_settings.json"
-USER_SETTINGS_PATH = CONFIG_DIR / "user_settings.json"
+APP_SETTINGS_PATH = _CONFIG_DIR / "app_settings.json"
+USER_SETTINGS_PATH = _CONFIG_DIR / "user_settings.json"
 
-STYLE_DIR = PROJECT_ROOT / "style"
-BASE_STYLE_PATH = STYLE_DIR / "style.css"
-LIGHT_STYLE_PATH = STYLE_DIR / "light.css"
-DARK_STYLE_PATH = STYLE_DIR / "dark.css"
+BASE_STYLE_PATH = _STYLE_DIR / "style.css"
+LIGHT_STYLE_PATH = _STYLE_DIR / "light.css"
+DARK_STYLE_PATH = _STYLE_DIR / "dark.css"
 
 DEFAULT_THEME: ThemeName = "light"
 
 NumberLike = int | float | str
 
-SETTINGS_KEYS = (
+_SETTINGS_KEYS: tuple[str, ...] = (
     "v0",
     "angle_deg",
     "mass",
@@ -54,6 +55,8 @@ def is_number_like(value: object) -> TypeGuard[NumberLike]:
 
 
 def load_theme() -> ThemeName:
+    """Return the saved theme, or the default theme if loading fails."""
+
     if not APP_SETTINGS_PATH.exists():
         return DEFAULT_THEME
 
@@ -76,6 +79,8 @@ def load_theme() -> ThemeName:
 
 
 def save_theme(theme: ThemeName) -> None:
+    """Save the selected application theme."""
+
     APP_SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with open(APP_SETTINGS_PATH, "w", encoding="utf-8") as file:
@@ -88,6 +93,8 @@ def save_theme(theme: ThemeName) -> None:
 
 
 def read_style(path: Path) -> str:
+    """Return a stylesheet file as text, or an empty string if it is missing."""
+
     if not path.exists():
         return ""
 
@@ -95,6 +102,8 @@ def read_style(path: Path) -> str:
 
 
 def get_stylesheet(theme: ThemeName) -> str:
+    """Combine the base stylesheet with the selected theme stylesheet."""
+
     base_style = read_style(BASE_STYLE_PATH)
 
     if theme == "dark":
@@ -106,6 +115,8 @@ def get_stylesheet(theme: ThemeName) -> str:
 
 
 def parameters_to_settings_dict(parameters: Parameters) -> dict[str, float]:
+    """Convert simulation parameters to JSON-compatible settings values."""
+
     return {
         "v0": float(parameters.initial_velocity),
         "angle_deg": float(parameters.initial_angle_degrees),
@@ -125,6 +136,8 @@ def parameters_to_settings_dict(parameters: Parameters) -> dict[str, float]:
 
 
 def settings_dict_to_parameters(settings: dict[str, float]) -> Parameters:
+    """Create validated simulation parameters from stored settings values."""
+
     return Parameters(
         initial_velocity=settings["v0"],
         initial_angle_degrees=settings["angle_deg"],
@@ -144,6 +157,8 @@ def settings_dict_to_parameters(settings: dict[str, float]) -> Parameters:
 
 
 def load_user_settings() -> Parameters:
+    """Load saved simulation parameters, falling back to defaults on failure."""
+
     if not USER_SETTINGS_PATH.exists():
         return DEFAULT_PARAMETERS
 
@@ -156,7 +171,7 @@ def load_user_settings() -> Parameters:
 
         settings = parameters_to_settings_dict(DEFAULT_PARAMETERS)
 
-        for key in SETTINGS_KEYS:
+        for key in _SETTINGS_KEYS:
             loaded_value = loaded_json.get(key)
 
             if is_number_like(loaded_value):
@@ -169,6 +184,8 @@ def load_user_settings() -> Parameters:
 
 
 def save_user_settings(parameters: Parameters) -> None:
+    """Save simulation parameters as JSON."""
+
     USER_SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     settings_data = parameters_to_settings_dict(parameters)

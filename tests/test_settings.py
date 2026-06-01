@@ -162,6 +162,8 @@ def test_parameters_to_settings_dict() -> None:
         g=9.81,
         wind_speed=3.0,
         wind_angle_degrees=180.0,
+        initial_x=5.0,
+        initial_y=2.0,
     )
 
     result = settings.parameters_to_settings_dict(parameters)
@@ -179,6 +181,8 @@ def test_parameters_to_settings_dict() -> None:
         "g": 9.81,
         "wind_speed": 3.0,
         "wind_angle_deg": 180.0,
+        "initial_x": 5.0,
+        "initial_y": 2.0,
     }
 
 
@@ -196,6 +200,8 @@ def test_settings_dict_to_parameters() -> None:
         "g": 9.81,
         "wind_speed": 3.0,
         "wind_angle_deg": 180.0,
+        "initial_x": 5.0,
+        "initial_y": 2.0,
     }
 
     result = settings.settings_dict_to_parameters(data)
@@ -213,6 +219,8 @@ def test_settings_dict_to_parameters() -> None:
         g=9.81,
         wind_speed=3.0,
         wind_angle_degrees=180.0,
+        initial_x=5.0,
+        initial_y=2.0,
     )
 
 
@@ -345,6 +353,8 @@ def test_save_and_load_user_settings_round_trip(
         g=9.81,
         wind_speed=2.0,
         wind_angle_degrees=45.0,
+        initial_x=5.0,
+        initial_y=2.0,
     )
 
     settings.save_user_settings(parameters)
@@ -356,16 +366,3 @@ def test_default_stylesheet_paths_point_to_existing_files() -> None:
     assert settings.BASE_STYLE_PATH.is_file()
     assert settings.LIGHT_STYLE_PATH.is_file()
     assert settings.DARK_STYLE_PATH.is_file()
-
-
-def test_save_and_load_user_settings_preserves_initial_position(
-    settings_paths: dict[str, Path],
-) -> None:
-    parameters = Parameters(
-        initial_x=12.5,
-        initial_y=3.25,
-    )
-
-    settings.save_user_settings(parameters)
-
-    assert settings.load_user_settings() == parameters
