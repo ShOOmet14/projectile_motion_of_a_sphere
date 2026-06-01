@@ -9,3 +9,4 @@ pyrightconfig.json
 src/config/user_settings.json
 src/config/app_settings.json
 results/
+refactor_docs/
