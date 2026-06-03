@@ -2,16 +2,17 @@ import sys
 
 from typing import NoReturn
 
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
+
+from src.config.settings import get_stylesheet, load_theme
+from src.gui.main_window import MainWindow
+
 
 APP_ICON_PATH = "style/icons/app_icon.svg"
 
 
 def main() -> NoReturn:
-    from PySide6.QtGui import QIcon
-    from PySide6.QtWidgets import QApplication
-
-    from src.config.settings import get_stylesheet, load_theme
-    from src.gui.main_window import MainWindow
 
     app = QApplication(sys.argv)
 
