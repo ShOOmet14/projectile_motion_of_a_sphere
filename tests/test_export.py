@@ -1,20 +1,19 @@
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, cast
-
-import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
 from unittest.mock import Mock, call
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from numpy.testing import assert_allclose, assert_array_equal
 from pytest import MonkeyPatch
 
 from src.config.parameters import Parameters
 from src.visualization import export
+from src.simulation.solve import ProjectileResult
 from src.visualization.export import (
     GIF_FPS,
     GIF_FRAMES,
@@ -33,7 +32,7 @@ from src.visualization.export import (
 )
 
 
-def make_projectile_result(offset: float = 0.0) -> dict[str, np.ndarray]:
+def make_projectile_result(offset: float = 0.0) -> ProjectileResult:
     vx = np.array([10.0, 8.0, 6.0], dtype=np.float64) + offset
     vy = np.array([4.0, 0.0, -4.0], dtype=np.float64) + offset
 
@@ -506,3 +505,81 @@ def test_animate_projectile_motion_adds_velocity_vectors_without_wind_arrow(
     assert len(axis.patches) == 3
     assert len(axis.texts) == 2
     assert all(not text.get_text().startswith("Wind:") for text in axis.texts)
+
+
+def test_save_plot_creates_missing_parent_directories(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    figure = Mock(spec=Figure)
+    monkeypatch.setattr(export.plt, "close", Mock())
+
+    output_path = tmp_path / "exports" / "plots" / "trajectory.png"
+
+    save_plot(figure, output_path)
+
+    assert output_path.parent.is_dir()
+
+
+def test_save_plot_closes_figure_when_saving_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    figure = Mock(spec=Figure)
+    figure.savefig.side_effect = OSError("Disk error")
+
+    close = Mock()
+    monkeypatch.setattr(export.plt, "close", close)
+
+    with pytest.raises(OSError, match="Disk error"):
+        save_plot(figure, tmp_path / "plot.png")
+
+    close.assert_called_once_with(figure)
+
+
+def test_animate_projectile_motion_creates_parent_directories(
+    tmp_path: Path,
+    captured_animation: tuple[list[tuple[Figure, Axes]], type[AnimationStub]],
+) -> None:
+    result = make_projectile_result()
+    output_path = tmp_path / "exports" / "animations" / "motion.gif"
+
+    animate_projectile_motion(
+        result,
+        result,
+        result,
+        Parameters(),
+        False,
+        output_path,
+    )
+
+    assert output_path.parent.is_dir()
+
+
+def test_animate_projectile_motion_closes_figure_when_saving_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    captured_animation: tuple[list[tuple[Figure, Axes]], type[AnimationStub]],
+) -> None:
+    figures, animation_stub = captured_animation
+    result = make_projectile_result()
+
+    def fail_save(*args: object, **kwargs: object) -> None:
+        raise OSError("Disk error")
+
+    monkeypatch.setattr(animation_stub, "save", fail_save)
+
+    close = Mock()
+    monkeypatch.setattr(export.plt, "close", close)
+
+    with pytest.raises(OSError, match="Disk error"):
+        animate_projectile_motion(
+            result,
+            result,
+            result,
+            Parameters(),
+            False,
+            tmp_path / "motion.gif",
+        )
+
+    close.assert_called_once_with(figures[0][0])

@@ -1,19 +1,22 @@
-from math import cos, pi, sin
+"""Export static plots and GIF animations for projectile-motion results."""
+
+from math import cos, sin
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-
 from matplotlib.animation import FuncAnimation, PillowWriter
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.text import Text
-from matplotlib.axes import Axes
 
 from src.config.parameters import Parameters
 from src.simulation.solve import ProjectileResult
+
+FloatArray = npt.NDArray[np.float64]
 
 
 GIF_FRAMES = 180
@@ -22,27 +25,70 @@ FIGURE_DPI = 100
 FIGURE_SIZE = (8, 5)
 
 
+def _prepare_output_path(path: str | Path) -> Path:
+    """Create missing parent directories and return a normalized output path."""
+
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    return output_path
+
+
 def save_plot(figure: Figure, save_path: str | Path) -> None:
-    figure.savefig(save_path, dpi=300, bbox_inches="tight")
-    plt.close(figure)
+    """Save a figure as a high-resolution image and close it afterward."""
+
+    output_path = _prepare_output_path(save_path)
+
+    try:
+        figure.savefig(
+            output_path,
+            dpi=300,
+            bbox_inches="tight",
+        )
+    finally:
+        plt.close(figure)
+
+
+def _get_wind_arrow_end(
+    parameters: Parameters,
+    start_x: float,
+    start_y: float,
+    length: float,
+) -> tuple[float, float]:
+    """Return the end point of a normalized wind-direction arrow."""
+
+    dx = length * cos(parameters.wind_angle_radians)
+    dy = length * sin(parameters.wind_angle_radians)
+
+    return start_x + dx, start_y + dy
+
+
+def _format_wind_label(parameters: Parameters) -> str:
+    """Return a compact label describing wind speed and direction."""
+
+    return (
+        f"Wind: {parameters.wind_speed:.1f} m/s, {parameters.wind_angle_degrees:.0f}°"
+    )
 
 
 def draw_wind_vector_on_axis(axis: Axes, parameters: Parameters) -> None:
     if parameters.wind_speed <= 0:
         return
 
-    wind_angle_radians = parameters.wind_angle_degrees * pi / 180.0
-
     start_x = 0.78
     start_y = 0.88
     length = 0.12
 
-    dx = length * cos(wind_angle_radians)
-    dy = length * sin(wind_angle_radians)
+    end_x, end_y = _get_wind_arrow_end(
+        parameters,
+        start_x,
+        start_y,
+        length,
+    )
 
     axis.annotate(
         "",
-        xy=(start_x + dx, start_y + dy),
+        xy=(end_x, end_y),
         xytext=(start_x, start_y),
         xycoords="axes fraction",
         arrowprops={
@@ -55,9 +101,7 @@ def draw_wind_vector_on_axis(axis: Axes, parameters: Parameters) -> None:
     axis.text(
         start_x,
         start_y - 0.07,
-        (
-            f"Wind: {parameters.wind_speed:.1f} m/s, {parameters.wind_angle_degrees:.0f}°"
-        ),
+        _format_wind_label(parameters),
         transform=axis.transAxes,
         fontsize=9,
         bbox={
@@ -68,21 +112,31 @@ def draw_wind_vector_on_axis(axis: Axes, parameters: Parameters) -> None:
     )
 
 
-def plot_motion(
-    x_no_drag: npt.NDArray[np.float64],
-    y_no_drag: npt.NDArray[np.float64],
-    x_linear: npt.NDArray[np.float64],
-    y_linear: npt.NDArray[np.float64],
-    x_quadratic: npt.NDArray[np.float64],
-    y_quadratic: npt.NDArray[np.float64],
-    parameters: Parameters,
-    show_vectors: bool,
-    save_path: str | Path,
+def _draw_three_model_lines(
+    axis: Axes,
+    x_no_drag: FloatArray,
+    y_no_drag: FloatArray,
+    x_linear: FloatArray,
+    y_linear: FloatArray,
+    x_quadratic: FloatArray,
+    y_quadratic: FloatArray,
 ) -> None:
-    figure, axis = plt.subplots()
+    """Draw one comparison line for each projectile-motion model."""
 
-    axis.plot(x_no_drag, y_no_drag, label="No drag", color="red")
-    axis.plot(x_linear, y_linear, label="Linear drag", color="blue")
+    axis.plot(
+        x_no_drag,
+        y_no_drag,
+        label="No drag",
+        color="red",
+    )
+
+    axis.plot(
+        x_linear,
+        y_linear,
+        label="Linear drag",
+        color="blue",
+    )
+
     axis.plot(
         x_quadratic,
         y_quadratic,
@@ -90,107 +144,126 @@ def plot_motion(
         color="green",
     )
 
-    axis.set_title("Trajectory comparison")
-    axis.set_xlabel("x [m]")
-    axis.set_ylabel("y [m]")
+
+def _finish_comparison_plot(
+    axis: Axes,
+    title: str,
+    x_label: str,
+    y_label: str,
+) -> None:
+    """Apply common labels, legend, and grid settings to a comparison plot."""
+
+    axis.set_title(title)
+    axis.set_xlabel(x_label)
+    axis.set_ylabel(y_label)
+    axis.legend()
+    axis.grid(True)
+
+
+def plot_motion(
+    x_no_drag: FloatArray,
+    y_no_drag: FloatArray,
+    x_linear: FloatArray,
+    y_linear: FloatArray,
+    x_quadratic: FloatArray,
+    y_quadratic: FloatArray,
+    parameters: Parameters,
+    show_vectors: bool,
+    save_path: str | Path,
+) -> None:
+    figure, axis = plt.subplots()
+
+    _draw_three_model_lines(
+        axis,
+        x_no_drag,
+        y_no_drag,
+        x_linear,
+        y_linear,
+        x_quadratic,
+        y_quadratic,
+    )
+
+    _finish_comparison_plot(
+        axis,
+        title="Trajectory comparison",
+        x_label="x [m]",
+        y_label="y [m]",
+    )
 
     if show_vectors:
         draw_wind_vector_on_axis(axis, parameters)
-
-    axis.legend()
-    axis.grid(True)
 
     save_plot(figure, save_path)
 
 
 def plot_speed(
-    speed_no_drag: npt.NDArray[np.float64],
-    speed_linear: npt.NDArray[np.float64],
-    speed_quadratic: npt.NDArray[np.float64],
-    time_no_drag: npt.NDArray[np.float64],
-    time_linear: npt.NDArray[np.float64],
-    time_quadratic: npt.NDArray[np.float64],
+    speed_no_drag: FloatArray,
+    speed_linear: FloatArray,
+    speed_quadratic: FloatArray,
+    time_no_drag: FloatArray,
+    time_linear: FloatArray,
+    time_quadratic: FloatArray,
     save_path: str | Path,
 ) -> None:
     figure, axis = plt.subplots()
 
-    axis.plot(
+    _draw_three_model_lines(
+        axis,
         time_no_drag,
         speed_no_drag,
-        label="No drag",
-        color="red",
-    )
-
-    axis.plot(
         time_linear,
         speed_linear,
-        label="Linear drag",
-        color="blue",
-    )
-
-    axis.plot(
         time_quadratic,
         speed_quadratic,
-        label="Quadratic drag RK4",
-        color="green",
     )
 
-    axis.set_title("Speed comparison")
-    axis.set_xlabel("t [s]")
-    axis.set_ylabel("v [m/s]")
-
-    axis.legend()
-    axis.grid(True)
+    _finish_comparison_plot(
+        axis,
+        title="Speed comparison",
+        x_label="t [s]",
+        y_label="v [m/s]",
+    )
 
     save_plot(figure, save_path)
 
 
 def plot_energy(
-    mechanical_energy_no_drag: npt.NDArray[np.float64],
-    mechanical_energy_linear: npt.NDArray[np.float64],
-    mechanical_energy_quadratic: npt.NDArray[np.float64],
-    time_no_drag: npt.NDArray[np.float64],
-    time_linear: npt.NDArray[np.float64],
-    time_quadratic: npt.NDArray[np.float64],
+    mechanical_energy_no_drag: FloatArray,
+    mechanical_energy_linear: FloatArray,
+    mechanical_energy_quadratic: FloatArray,
+    time_no_drag: FloatArray,
+    time_linear: FloatArray,
+    time_quadratic: FloatArray,
     save_path: str | Path,
 ) -> None:
     figure, axis = plt.subplots()
 
-    axis.plot(
+    _draw_three_model_lines(
+        axis,
         time_no_drag,
         mechanical_energy_no_drag,
-        label="No drag",
-        color="red",
-    )
-
-    axis.plot(
         time_linear,
         mechanical_energy_linear,
-        label="Linear drag",
-        color="blue",
-    )
-
-    axis.plot(
         time_quadratic,
         mechanical_energy_quadratic,
-        label="Quadratic drag RK4",
-        color="green",
     )
 
-    axis.set_title("Mechanical energy comparison")
-    axis.set_xlabel("t [s]")
-    axis.set_ylabel("E [J]")
-
-    axis.legend()
-    axis.grid(True)
+    _finish_comparison_plot(
+        axis,
+        title="Mechanical energy comparison",
+        x_label="t [s]",
+        y_label="E [J]",
+    )
 
     save_plot(figure, save_path)
 
 
 def get_interpolated_positions(
     result: ProjectileResult,
-    animation_time: npt.NDArray[np.float64],
-) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    animation_time: FloatArray,
+) -> tuple[FloatArray, FloatArray]:
+    """Interpolate projectile positions at evenly spaced animation times."""
+
     x = np.interp(animation_time, result["t"], result["x"])
     y = np.interp(animation_time, result["t"], result["y"])
 
@@ -199,8 +272,10 @@ def get_interpolated_positions(
 
 def get_interpolated_velocities(
     result: ProjectileResult,
-    animation_time: npt.NDArray[np.float64],
-) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    animation_time: FloatArray,
+) -> tuple[FloatArray, FloatArray]:
+    """Interpolate projectile velocities at evenly spaced animation times."""
+
     vx = np.interp(animation_time, result["t"], result["vx"])
     vy = np.interp(animation_time, result["t"], result["vy"])
 
@@ -212,6 +287,8 @@ def get_axis_limits(
     linear_drag: ProjectileResult,
     quadratic_drag: ProjectileResult,
 ) -> tuple[float, float, float, float]:
+    """Return padded axis limits that contain all three trajectories."""
+
     min_x = min(
         float(np.min(no_drag["x"])),
         float(np.min(linear_drag["x"])),
@@ -257,6 +334,8 @@ def get_velocity_scale(
     linear_drag: ProjectileResult,
     quadratic_drag: ProjectileResult,
 ) -> float:
+    """Return a scale factor that keeps velocity arrows visually readable."""
+
     x_min, x_max, _, _ = get_axis_limits(
         no_drag,
         linear_drag,
@@ -283,13 +362,15 @@ def animate_projectile_motion(
     show_vectors: bool,
     save_path: str | Path,
 ) -> None:
+    output_path = _prepare_output_path(save_path)
+
     animation_end_time = max(
         float(no_drag["t"][-1]),
         float(linear_drag["t"][-1]),
         float(quadratic_drag["t"][-1]),
     )
 
-    animation_time: npt.NDArray[np.float64] = np.linspace(
+    animation_time: FloatArray = np.linspace(
         0.0,
         animation_end_time,
         GIF_FRAMES,
@@ -417,18 +498,20 @@ def animate_projectile_motion(
 
     if show_vectors:
         if parameters.wind_speed > 0:
-            wind_angle_radians = parameters.wind_angle_degrees * pi / 180.0
-
             start_x = 0.78
             start_y = 0.88
             length = 0.12
 
-            dx = length * cos(wind_angle_radians)
-            dy = length * sin(wind_angle_radians)
+            end_x, end_y = _get_wind_arrow_end(
+                parameters,
+                start_x,
+                start_y,
+                length,
+            )
 
             wind_arrow = FancyArrowPatch(
                 (start_x, start_y),
-                (start_x + dx, start_y + dy),
+                (end_x, end_y),
                 transform=axis.transAxes,
                 arrowstyle="->",
                 mutation_scale=16,
@@ -441,10 +524,7 @@ def animate_projectile_motion(
             axis.text(
                 start_x,
                 start_y - 0.07,
-                (
-                    f"Wind: {parameters.wind_speed:.1f} m/s, "
-                    f"{parameters.wind_angle_degrees:.0f}°"
-                ),
+                _format_wind_label(parameters),
                 transform=axis.transAxes,
                 fontsize=9,
                 bbox={
@@ -488,6 +568,8 @@ def animate_projectile_motion(
     figure.tight_layout()
 
     def update(frame_index: int) -> tuple[Line2D, Line2D, Line2D, Text]:
+        """Update projectile positions, velocity vectors, and labels for one frame."""
+
         current_time = float(animation_time[frame_index])
 
         current_no_drag_x = float(no_drag_x[frame_index])
@@ -526,47 +608,54 @@ def animate_projectile_motion(
         time_text.set_text(f"t = {current_time:.2f} s")
 
         if show_vectors:
-            no_drag_arrow = velocity_arrows.get("no_drag")
-            linear_drag_arrow = velocity_arrows.get("linear_drag")
-            quadratic_drag_arrow = velocity_arrows.get("quadratic_drag")
+            no_drag_arrow = velocity_arrows["no_drag"]
+            linear_drag_arrow = velocity_arrows["linear_drag"]
+            quadratic_drag_arrow = velocity_arrows["quadratic_drag"]
 
-            if no_drag_arrow is not None:
-                no_drag_arrow.set_positions(
-                    (current_no_drag_x, current_no_drag_y),
-                    (
-                        current_no_drag_x + current_no_drag_vx * velocity_scale,
-                        current_no_drag_y + current_no_drag_vy * velocity_scale,
-                    ),
-                )
+            no_drag_arrow.set_positions(
+                (current_no_drag_x, current_no_drag_y),
+                (
+                    current_no_drag_x + current_no_drag_vx * velocity_scale,
+                    current_no_drag_y + current_no_drag_vy * velocity_scale,
+                ),
+            )
 
-            if linear_drag_arrow is not None:
-                linear_drag_arrow.set_positions(
-                    (current_linear_x, current_linear_y),
-                    (
-                        current_linear_x + current_linear_vx * velocity_scale,
-                        current_linear_y + current_linear_vy * velocity_scale,
-                    ),
-                )
+            linear_drag_arrow.set_positions(
+                (current_linear_x, current_linear_y),
+                (
+                    current_linear_x + current_linear_vx * velocity_scale,
+                    current_linear_y + current_linear_vy * velocity_scale,
+                ),
+            )
 
-            if quadratic_drag_arrow is not None:
-                quadratic_drag_arrow.set_positions(
-                    (current_quadratic_x, current_quadratic_y),
-                    (
-                        current_quadratic_x + current_quadratic_vx * velocity_scale,
-                        current_quadratic_y + current_quadratic_vy * velocity_scale,
-                    ),
-                )
+            quadratic_drag_arrow.set_positions(
+                (current_quadratic_x, current_quadratic_y),
+                (
+                    current_quadratic_x + current_quadratic_vx * velocity_scale,
+                    current_quadratic_y + current_quadratic_vy * velocity_scale,
+                ),
+            )
 
-            if velocity_text is not None:
-                velocity_text.set_text(
-                    "Velocity components\n"
-                    f"No drag: vx={current_no_drag_vx:.2f}, vy={current_no_drag_vy:.2f} m/s\n"
-                    f"Linear:  vx={current_linear_vx:.2f}, vy={current_linear_vy:.2f} m/s\n"
-                    f"Quad:    vx={current_quadratic_vx:.2f}, vy={current_quadratic_vy:.2f} m/s\n"
-                    f"Wind:    vx={parameters.wind_vx:.2f}, vy={parameters.wind_vy:.2f} m/s"
-                )
+            assert velocity_text is not None
 
-        return no_drag_point, linear_drag_point, quadratic_drag_point, time_text
+            velocity_text.set_text(
+                "Velocity components\n"
+                f"No drag: vx={current_no_drag_vx:.2f}, "
+                f"vy={current_no_drag_vy:.2f} m/s\n"
+                f"Linear:  vx={current_linear_vx:.2f}, "
+                f"vy={current_linear_vy:.2f} m/s\n"
+                f"Quad:    vx={current_quadratic_vx:.2f}, "
+                f"vy={current_quadratic_vy:.2f} m/s\n"
+                f"Wind:    vx={parameters.wind_vx:.2f}, "
+                f"vy={parameters.wind_vy:.2f} m/s"
+            )
+
+        return (
+            no_drag_point,
+            linear_drag_point,
+            quadratic_drag_point,
+            time_text,
+        )
 
     animation = FuncAnimation(
         figure,
@@ -576,10 +665,11 @@ def animate_projectile_motion(
         blit=False,
     )
 
-    animation.save(
-        save_path,
-        writer=PillowWriter(fps=GIF_FPS),
-        dpi=FIGURE_DPI,
-    )
-
-    plt.close(figure)
+    try:
+        animation.save(
+            output_path,
+            writer=PillowWriter(fps=GIF_FPS),
+            dpi=FIGURE_DPI,
+        )
+    finally:
+        plt.close(figure)
