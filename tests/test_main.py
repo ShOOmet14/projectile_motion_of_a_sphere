@@ -2,13 +2,15 @@ import runpy
 import sys
 
 from dataclasses import dataclass
-from types import ModuleType
 from unittest.mock import Mock, call
 
 import pytest
+from PySide6 import QtGui, QtWidgets
 from pytest import MonkeyPatch
 
 import main as application_entry_point
+from src.config import settings
+from src.gui import main_window
 
 
 @dataclass
@@ -28,6 +30,8 @@ def install_startup_doubles(
     monkeypatch: MonkeyPatch,
     exit_code: int = 0,
 ) -> StartupDoubles:
+    """Replace application-startup dependencies with isolated test doubles."""
+
     app = Mock()
     app.exec.return_value = exit_code
     application_factory = Mock(return_value=app)
@@ -42,23 +46,71 @@ def install_startup_doubles(
     window = Mock()
     window_factory = Mock(return_value=window)
 
-    pyside_module = ModuleType("PySide6")
-    qt_gui_module = ModuleType("PySide6.QtGui")
-    qt_widgets_module = ModuleType("PySide6.QtWidgets")
-    settings_module = ModuleType("src.config.settings")
-    main_window_module = ModuleType("src.gui.main_window")
+    # Patch names already imported and stored inside main.py.
+    # These patches are used when calling application_entry_point.main()
+    # directly in the first test.
+    monkeypatch.setattr(
+        application_entry_point,
+        "QApplication",
+        application_factory,
+    )
 
-    setattr(qt_gui_module, "QIcon", icon_factory)
-    setattr(qt_widgets_module, "QApplication", application_factory)
-    setattr(settings_module, "load_theme", load_theme)
-    setattr(settings_module, "get_stylesheet", get_stylesheet)
-    setattr(main_window_module, "MainWindow", window_factory)
+    monkeypatch.setattr(
+        application_entry_point,
+        "QIcon",
+        icon_factory,
+    )
 
-    monkeypatch.setitem(sys.modules, "PySide6", pyside_module)
-    monkeypatch.setitem(sys.modules, "PySide6.QtGui", qt_gui_module)
-    monkeypatch.setitem(sys.modules, "PySide6.QtWidgets", qt_widgets_module)
-    monkeypatch.setitem(sys.modules, "src.config.settings", settings_module)
-    monkeypatch.setitem(sys.modules, "src.gui.main_window", main_window_module)
+    monkeypatch.setattr(
+        application_entry_point,
+        "load_theme",
+        load_theme,
+    )
+
+    monkeypatch.setattr(
+        application_entry_point,
+        "get_stylesheet",
+        get_stylesheet,
+    )
+
+    monkeypatch.setattr(
+        application_entry_point,
+        "MainWindow",
+        window_factory,
+    )
+
+    # Patch the original source modules as well.
+    # These patches are used when runpy.run_path() executes main.py as a
+    # fresh script in the second test and imports these names again.
+    monkeypatch.setattr(
+        QtWidgets,
+        "QApplication",
+        application_factory,
+    )
+
+    monkeypatch.setattr(
+        QtGui,
+        "QIcon",
+        icon_factory,
+    )
+
+    monkeypatch.setattr(
+        settings,
+        "load_theme",
+        load_theme,
+    )
+
+    monkeypatch.setattr(
+        settings,
+        "get_stylesheet",
+        get_stylesheet,
+    )
+
+    monkeypatch.setattr(
+        main_window,
+        "MainWindow",
+        window_factory,
+    )
 
     return StartupDoubles(
         application_factory=application_factory,
