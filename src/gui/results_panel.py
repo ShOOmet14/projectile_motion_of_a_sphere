@@ -1,4 +1,4 @@
-import numpy as np
+"""Display formatted summaries of projectile-motion simulation results."""
 
 from PySide6.QtWidgets import QLabel, QPlainTextEdit, QVBoxLayout, QWidget
 
@@ -6,7 +6,11 @@ from src.simulation.solve import ProjectileResult
 
 
 class ResultsPanel(QWidget):
+    """Display summary metrics for each projectile-motion model."""
+
     def __init__(self) -> None:
+        """Create the read-only results panel."""
+
         super().__init__()
 
         layout = QVBoxLayout()
@@ -29,20 +33,33 @@ class ResultsPanel(QWidget):
         linear_drag: ProjectileResult,
         quadratic_drag: ProjectileResult,
     ) -> None:
-        text = "\n\n".join(
-            (
-                self.format_result("No drag", no_drag),
-                self.format_result("Linear drag", linear_drag),
-                self.format_result("Quadratic drag RK4", quadratic_drag),
-            )
+        """Display summaries for all three projectile-motion models."""
+
+        model_results = (
+            ("No drag", no_drag),
+            ("Linear drag", linear_drag),
+            ("Quadratic drag RK4", quadratic_drag),
         )
 
-        self.results_text.setPlainText(text)
+        summaries = (
+            self.format_result(model_name, result)
+            for model_name, result in model_results
+        )
 
-    def format_result(self, model_name: str, result: ProjectileResult) -> str:
+        self.results_text.setPlainText("\n\n".join(summaries))
+
+    @staticmethod
+    def format_result(
+        model_name: str,
+        result: ProjectileResult,
+    ) -> str:
+        """Return a readable summary of one simulation result."""
+
         flight_time = float(result["t"][-1])
-        projectile_range = float(result["x"][-1])
-        max_height = float(np.max(result["y"]))
+
+        projectile_range = abs(float(result["x"][-1] - result["x"][0]))
+
+        max_height = float(result["y"].max())
 
         initial_speed = float(result["v"][0])
         min_speed = float(result["v"].min())

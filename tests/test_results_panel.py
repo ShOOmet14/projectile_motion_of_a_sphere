@@ -15,8 +15,26 @@ def make_projectile_result(multiplier: float = 1.0) -> ProjectileResult:
         "vx": np.array([8.0, 3.0, 6.0], dtype=np.float64) * multiplier,
         "vy": np.array([6.0, -1.0, -4.0], dtype=np.float64) * multiplier,
         "v": np.array([10.5, 3.333, 8.999], dtype=np.float64) * multiplier,
+        "Ek": np.array([50.0, 20.0, 40.0], dtype=np.float64) * multiplier,
+        "Ep": np.array([50.5, 60.1, 26.666], dtype=np.float64) * multiplier,
         "E": np.array([100.5, 80.1, 66.666], dtype=np.float64) * multiplier,
     }
+
+
+def test_format_result_calculates_range_from_launch_position() -> None:
+    result = make_projectile_result()
+
+    result["x"] = np.array(
+        [5.0, 0.0, -7.4],
+        dtype=np.float64,
+    )
+
+    text = ResultsPanel.format_result(
+        "Example model",
+        result,
+    )
+
+    assert "Range: 12.40 m" in text
 
 
 def test_results_panel_initialization(qtbot: QtBot) -> None:
@@ -47,11 +65,11 @@ def test_results_panel_initialization(qtbot: QtBot) -> None:
     assert results_item.widget() is panel.results_text
 
 
-def test_format_result_returns_expected_summary(qtbot: QtBot) -> None:
-    panel = ResultsPanel()
-    qtbot.addWidget(panel)
-
-    result = panel.format_result("Example model", make_projectile_result())
+def test_format_result_returns_expected_summary() -> None:
+    result = ResultsPanel.format_result(
+        "Example model",
+        make_projectile_result(),
+    )
 
     assert result == (
         "Example model:\n"
@@ -84,9 +102,12 @@ def test_set_results_displays_all_models_separated_by_blank_lines(
 
     expected_text = "\n\n".join(
         (
-            panel.format_result("No drag", no_drag),
-            panel.format_result("Linear drag", linear_drag),
-            panel.format_result("Quadratic drag RK4", quadratic_drag),
+            ResultsPanel.format_result("No drag", no_drag),
+            ResultsPanel.format_result("Linear drag", linear_drag),
+            ResultsPanel.format_result(
+                "Quadratic drag RK4",
+                quadratic_drag,
+            ),
         )
     )
 
