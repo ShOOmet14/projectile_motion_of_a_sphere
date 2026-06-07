@@ -181,9 +181,9 @@ where:
 
 ## Notes
 
-- The simulator models a spherical projectile moving in two dimensions.
-- Gravity is constant during each simulation.
-- Wind is represented as a constant velocity vector.
-- The simulation stops when the projectile reaches ground level.
-- The application does not model bouncing, spin, lift, or changing atmospheric density.
-- Saved theme and simulation settings are local files generated under `src/config/`.
+1. The simulator models a spherical projectile moving in two dimensions.
+2. Gravity is constant during each simulation.
+3. Wind is represented as a constant velocity vector.
+4. The simulation stops when the projectile reaches ground level.
+5. The application does not model bouncing, spin, lift, or changing atmospheric density.
+6. Saved theme and simulation settings are local files generated under `src/config/`.
