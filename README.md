@@ -20,7 +20,7 @@ This project was created as a learning exercise in Python GUI development, numer
 - Export options for: **CSV files**, plots, and GIF animation.
 - Buttons for opening exported plots and animations directories.
 - User settings and app settings are saved to **JSON files**.
-- Automatic unit tests for future development
+- Automated test suite using pytest and GitHub Actions.
 
 ## Preview
 
@@ -30,7 +30,7 @@ This project was created as a learning exercise in Python GUI development, numer
 
 ### Dark theme with playback panel
 
-![Animation panel](docs/readme-assets//app_2.png)
+![Animation panel](docs/readme-assets/app_2.png)
 
 ### Exported GIF animation
 
@@ -142,11 +142,19 @@ On systems where Python 3 is invoked as `python3`:
 python3 main.py
 ```
 
+## Running the tests
+
+Run the test suite locally:
+
+```bash
+pytest -q
+```
+
 ## Exported files
 
 After running a simulation, the application can create:
 
-```text
+```bash
 results/
 ├── animations/
 │   └── projectile_motion.gif
