@@ -63,8 +63,7 @@ If you are interested in the physics part, take a look at the PDF file inside th
 ├── style/
 ├── tests/
 ├── main.py
-├── requirements.txt
-└── requirements-dev.txt
+└── requirements.txt
 ```
 
 Main responsibilities:
