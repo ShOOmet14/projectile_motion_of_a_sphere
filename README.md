@@ -23,6 +23,7 @@ This project was created as a learning exercise in Python GUI development, numer
 - Export options for: **CSV files**, plots, and GIF animation.
 - Buttons for opening exported plots and animations directories.
 - User settings and app settings are saved to **JSON files**.
+- Automatic unit tests for future developement
 
 ## Preview
 
@@ -73,24 +74,35 @@ If you are interested in the physics part, take a look at the PDF file inside th
 └── requirements-dev.txt
 ```
 
+Main responsibilities:
+
+- `src/config/` stores validated simulation parameters and local settings logic.
+- `src/simulation/` contains the physics calculations and solvers.
+- `src/storage/` exports simulation results to CSV files.
+- `src/visualization/` exports PNG plots and GIF animations.
+- `src/gui/` contains the PySide6 interface.
+- `style/` contains Qt stylesheets and icons.
+- `tests/` contains the pytest test suite.
+- `docs/` contains preview assets and the physics explanation PDF.
+
 ## Installation
 
 ### 1. Clone the repository
 
 ```bash
-git clone "https://github.com/ShOOmet14/projectile_motion_of_a_sphere"
-cd projectile_motion_of_a_sphere/
+git clone https://github.com/ShOOmet14/projectile_motion_of_a_sphere.git
+cd projectile_motion_of_a_sphere
 ```
 
 ### 2. Create a virtual environment
 
-#### Windows
+Windows:
 
-```bash
-python -m venv venv
+```powershell
+py -m venv venv
 ```
 
-#### macOS / Linux
+macOS or Linux:
 
 ```bash
 python3 -m venv venv
@@ -98,56 +110,80 @@ python3 -m venv venv
 
 ### 3. Activate the virtual environment
 
-#### Windows PowerShell
+Windows PowerShell:
 
 ```powershell
-venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 ```
 
-#### Windows Command Prompt
+Windows Command Prompt:
 
 ```cmd
 venv\Scripts\activate.bat
 ```
 
-#### macOS / Linux
+macOS or Linux:
 
 ```bash
 source venv/bin/activate
 ```
 
-### 4. Install dependencies
-
-#### Windows
+### 4. Install runtime dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### macOS / Linux
-
-```bash
-pip3 install -r requirements.txt
-```
-
 ### 5. Run the application
-
-#### Windows
 
 ```bash
 python main.py
 ```
 
-#### macOS / Linux
+On systems where Python 3 is invoked as `python3`:
 
 ```bash
 python3 main.py
 ```
 
-### 6. Deactivate the virtual environment
+## Exported files
 
-After closing the app, you can deactivate the virtual environment with:
+After running a simulation, the application can create:
 
-```bash
-deactivate
+```text
+results/
+├── animations/
+│   └── projectile_motion.gif
+├── plots/
+│   ├── energy_comparison.png
+│   ├── speed_comparison.png
+│   └── trajectory_plot.png
+├── linear_drag.csv
+├── no_drag.csv
+└── quadratic_drag_rk4.csv
 ```
+
+Each CSV file contains:
+
+```text
+t, x, y, vx, vy, v, Ek, Ep, E
+```
+
+where:
+
+- `t` is time;
+- `x` and `y` are position components;
+- `vx` and `vy` are velocity components;
+- `v` is speed;
+- `Ek` is kinetic energy;
+- `Ep` is gravitational potential energy;
+- `E` is total mechanical energy.
+
+## Notes
+
+- The simulator models a spherical projectile moving in two dimensions.
+- Gravity is constant during each simulation.
+- Wind is represented as a constant velocity vector.
+- The simulation stops when the projectile reaches ground level.
+- The application does not model bouncing, spin, lift, or changing atmospheric density.
+- Saved theme and simulation settings are local files generated under `src/config/`.
