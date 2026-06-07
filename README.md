@@ -1,36 +1,36 @@
 # To do
 
-1. read and refactor the code
-2. fix plots and gif exports so that elements don't overlap
-3. update readme assets after fixing png and gif exporting
-4. update readme after adding wind
-5. fix code around wind logic
+1. fix plots and gif exports so that elements don't overlap
+2. update readme assets after fixing png and gif exporting
+3. update readme after adding wind
+4. fix code around wind logic
 
 # Projectile Motion Simulator
 
-A desktop application for simulating and comparing projectile motion models.
+A desktop application for simulating and comparing projectile motion models with an interactive PySide6 interface.
 
-This project was a learning experiment for me and a challenging step in understanding both GUI development (using **PySide6**) and physics simulation. The app allows the user to change physical parameters, run the simulation, visualize results, and export generated data, plots, and animation.
+This project was created as a learning exercise in Python GUI development, numerical methods, automated testing, and the physics of projectile motion. The application lets the user configure launch conditions and physical parameters, compare three motion models, inspect calculated results, and export simulation data and visualizations.
 
 ## Features
 
 - Simulation of projectile motion with three models: no air resistance, linear drag, and quadratic drag using **Runge-Kutta numerical integration**.
 - Interactive parameter panel with input validation for physically incorrect values.
-- Validation is handled both in the GUI and in the parameter dataclass model, so invalid values cannot be used even if they are loaded from saved settings.
-- Light and dark theme.
+- Many configuration options such as: launch conditions, projectile and environment properties, numerial settings.
+- Light and dark themes.
 - Styled GUI using **Qt CSS**.
-- Multiple result tabs: trajectory plot, energy plot, speed plot, playback animation, text results.
+- Multiple result tabs: trajectory comparison, mechanical-energy comparison, speed comparison, interactive playback, text summary.
+- Show or hide wind and velocity vectors.
 - Export options for: **CSV files**, plots, and GIF animation.
 - Buttons for opening exported plots and animations directories.
 - User settings and app settings are saved to **JSON files**.
 
 ## Preview
 
-### Main window with light theme and trajectory plot
+### Light theme with trajectory comparison
 
 ![Main window](docs/readme-assets/app_1.png)
 
-### Dark theme with animation panel
+### Dark theme with playback panel
 
 ![Animation panel](docs/readme-assets//app_2.png)
 
@@ -46,15 +46,32 @@ If you are interested in the physics part, take a look at the PDF file inside th
 
 ## Project structure
 
-- `config/` contains application parameters and settings logic.
-- `gui/` contains the GUI code made with PySide6.
-- `simulation/` contains the physics simulation logic.
-- `storage/` contains helper functions for exporting CSV files.
-- `visualization/` contains functions for exporting plots and animation.
-- `style/` contains Qt CSS files and icons.
-- `docs/` contains README images and the physics explanation PDF.
-- `main.py` is the main file used to run the application.
-- `requirements.txt` contains the libraries used in the project.
+```bash
+├── docs/
+│   ├── physics_projectile_motion.pdf
+│   └── readme-assets/
+├── src/
+│   ├── config/
+│   │   ├── parameters.py
+│   │   └── settings.py
+│   ├── gui/
+│   │   ├── animation_canvas.py
+│   │   ├── main_window.py
+│   │   ├── parameter_panel.py
+│   │   ├── plot_canvas.py
+│   │   └── results_panel.py
+│   ├── simulation/
+│   │   └── solve.py
+│   ├── storage/
+│   │   └── csv_export.py
+│   └── visualization/
+│       └── export.py
+├── style/
+├── tests/
+├── main.py
+├── requirements.txt
+└── requirements-dev.txt
+```
 
 ## Installation
 
