@@ -439,7 +439,7 @@ def test_animate_projectile_motion_adds_wind_and_velocity_vectors(
 
     _, axis = figures[0]
     assert len(axis.patches) == 4
-    assert len(axis.texts) == 3
+    assert len(axis.texts) == 2
     assert axis.texts[1].get_text() == "Wind: 5.0 m/s, 90°"
 
     animation_stub.instances[0].update(GIF_FRAMES - 1)
@@ -476,14 +476,6 @@ def test_animate_projectile_motion_adds_wind_and_velocity_vectors(
         assert_allclose(arrow._posA_posB[0], expected[0])
         assert_allclose(arrow._posA_posB[1], expected[1])
 
-    assert axis.texts[2].get_text() == (
-        "Velocity components\n"
-        "No drag: vx=6.00, vy=-4.00 m/s\n"
-        "Linear:  vx=7.00, vy=-3.00 m/s\n"
-        "Quad:    vx=8.00, vy=-2.00 m/s\n"
-        "Wind:    vx=0.00, vy=5.00 m/s"
-    )
-
 
 def test_animate_projectile_motion_adds_velocity_vectors_without_wind_arrow(
     tmp_path: Path,
@@ -503,7 +495,7 @@ def test_animate_projectile_motion_adds_velocity_vectors_without_wind_arrow(
 
     _, axis = figures[0]
     assert len(axis.patches) == 3
-    assert len(axis.texts) == 2
+    assert len(axis.texts) == 1
     assert all(not text.get_text().startswith("Wind:") for text in axis.texts)
 
 

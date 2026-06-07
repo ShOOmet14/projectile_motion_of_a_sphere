@@ -89,7 +89,6 @@ def test_animation_canvas_initialization(canvas: AnimationCanvas) -> None:
 
     assert canvas.wind_arrow is None
     assert canvas.velocity_arrows == {}
-    assert canvas.velocity_text is None
     assert canvas.velocity_scale == 1.0
 
     assert isinstance(canvas.animation_time, np.ndarray)
@@ -152,17 +151,16 @@ def test_show_empty_plot_resets_axis(canvas: AnimationCanvas) -> None:
 
 
 @pytest.mark.parametrize(
-    ("show_vectors", "expected_arrow_names", "expect_velocity_text"),
+    ("show_vectors", "expected_arrow_names"),
     [
-        (False, frozenset(), False),
-        (True, _ARROW_NAMES, True),
+        (False, frozenset()),
+        (True, _ARROW_NAMES),
     ],
 )
 def test_set_results_resets_playback_and_configures_vector_overlays(
     canvas: AnimationCanvas,
     show_vectors: bool,
     expected_arrow_names: frozenset[str],
-    expect_velocity_text: bool,
 ) -> None:
     no_drag = make_projectile_result(1.0)
     linear_drag = make_projectile_result(2.0)
@@ -200,7 +198,6 @@ def test_set_results_resets_playback_and_configures_vector_overlays(
     assert canvas.time_text.get_text() == "t = 0.00 s"
 
     assert frozenset(canvas.velocity_arrows) == expected_arrow_names
-    assert (canvas.velocity_text is not None) is expect_velocity_text
     assert canvas.wind_arrow is None
 
     assert canvas.start_button.isEnabled()
@@ -275,7 +272,6 @@ def test_draw_static_vectors_returns_when_required_data_is_missing(
 
     assert canvas.wind_arrow is None
     assert canvas.velocity_arrows == {}
-    assert canvas.velocity_text is None
     assert len(canvas.axis.patches) == 0
 
 
@@ -294,8 +290,6 @@ def test_draw_static_vectors_draws_velocity_arrows_without_wind(
     assert all(
         isinstance(arrow, FancyArrowPatch) for arrow in canvas.velocity_arrows.values()
     )
-    assert canvas.velocity_text is not None
-    assert canvas.velocity_text.get_text() == ""
     assert canvas.velocity_scale > 0.0
     assert len(canvas.axis.patches) == 3
 
@@ -315,7 +309,6 @@ def test_draw_static_vectors_draws_wind_arrow_and_label(
 
     assert isinstance(canvas.wind_arrow, FancyArrowPatch)
     assert frozenset(canvas.velocity_arrows) == _ARROW_NAMES
-    assert canvas.velocity_text is not None
     assert "Wind: 5.0 m/s, 45°" in [text.get_text() for text in canvas.axis.texts]
     assert len(canvas.axis.patches) == 4
 
@@ -419,24 +412,6 @@ def test_update_points_interpolates_markers_and_time_text(
         (1.6666666667, 0.8333333333)
     )
     assert canvas.time_text.get_text() == "t = 0.50 s"
-
-
-def test_update_points_updates_velocity_text_when_vectors_are_enabled(
-    canvas: AnimationCanvas,
-) -> None:
-    load_canvas_with_results(canvas, show_vectors=True)
-
-    canvas.update_points(0.5)
-
-    assert canvas.velocity_text is not None
-    velocity_text = canvas.velocity_text.get_text()
-
-    assert "Velocity components" in velocity_text
-    assert "No drag:" in velocity_text
-    assert "Linear:" in velocity_text
-    assert "Quad:" in velocity_text
-    assert "Wind:" in velocity_text
-    assert "vx=10.00" in velocity_text
 
 
 def test_get_interpolated_position() -> None:
