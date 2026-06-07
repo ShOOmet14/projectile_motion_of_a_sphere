@@ -1,7 +1,6 @@
 # Projectile Motion Simulator
 
 ![Tests](https://github.com/ShOOmet14/projectile_motion_of_a_sphere/actions/workflows/tests.yml/badge.svg)
-![Latest release](https://img.shields.io/github/v/release/ShOOmet14/projectile_motion_of_a_sphere)
 ![Python](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white)
 ![GUI](https://img.shields.io/badge/GUI-PySide6-green?logo=qt&logoColor=white)
 
