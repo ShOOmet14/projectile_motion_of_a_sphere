@@ -22,7 +22,7 @@ FloatArray = npt.NDArray[np.float64]
 GIF_FRAMES = 180
 GIF_FPS = 24
 FIGURE_DPI = 100
-FIGURE_SIZE = (8, 5)
+FIGURE_SIZE = (16, 9)
 
 
 def _prepare_output_path(path: str | Path) -> Path:
@@ -484,7 +484,6 @@ def animate_projectile_motion(
         },
     )
 
-    velocity_text: Text | None = None
     wind_arrow: FancyArrowPatch | None = None
     velocity_arrows: dict[str, FancyArrowPatch] = {}
 
@@ -551,19 +550,6 @@ def animate_projectile_motion(
             )
             axis.add_patch(arrow)
             velocity_arrows[name] = arrow
-
-        velocity_text = axis.text(
-            0.02,
-            0.78,
-            "",
-            transform=axis.transAxes,
-            fontsize=9,
-            bbox={
-                "facecolor": "white",
-                "alpha": 0.75,
-                "edgecolor": "none",
-            },
-        )
 
     figure.tight_layout()
 
@@ -634,20 +620,6 @@ def animate_projectile_motion(
                     current_quadratic_x + current_quadratic_vx * velocity_scale,
                     current_quadratic_y + current_quadratic_vy * velocity_scale,
                 ),
-            )
-
-            assert velocity_text is not None
-
-            velocity_text.set_text(
-                "Velocity components\n"
-                f"No drag: vx={current_no_drag_vx:.2f}, "
-                f"vy={current_no_drag_vy:.2f} m/s\n"
-                f"Linear:  vx={current_linear_vx:.2f}, "
-                f"vy={current_linear_vy:.2f} m/s\n"
-                f"Quad:    vx={current_quadratic_vx:.2f}, "
-                f"vy={current_quadratic_vy:.2f} m/s\n"
-                f"Wind:    vx={parameters.wind_vx:.2f}, "
-                f"vy={parameters.wind_vy:.2f} m/s"
             )
 
         return (

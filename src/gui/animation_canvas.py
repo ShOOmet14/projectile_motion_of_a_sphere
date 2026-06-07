@@ -54,7 +54,6 @@ class AnimationCanvas(QWidget):
 
         self.wind_arrow: FancyArrowPatch | None = None
         self.velocity_arrows: dict[str, FancyArrowPatch] = {}
-        self.velocity_text: Text | None = None
         self.velocity_scale = 1.0
 
         self.animation_time: FloatArray = np.array([], dtype=np.float64)
@@ -202,7 +201,6 @@ class AnimationCanvas(QWidget):
 
         self.wind_arrow = None
         self.velocity_arrows = {}
-        self.velocity_text = None
 
         self._draw_trajectory(
             self.no_drag,
@@ -309,19 +307,6 @@ class AnimationCanvas(QWidget):
 
             self.axis.add_patch(arrow)
             self.velocity_arrows[name] = arrow
-
-        self.velocity_text = self.axis.text(
-            0.02,
-            0.78,
-            "",
-            transform=self.axis.transAxes,
-            fontsize=9,
-            bbox={
-                "facecolor": "white",
-                "alpha": 0.75,
-                "edgecolor": "none",
-            },
-        )
 
     def _draw_wind_vector(self) -> None:
         """Draw a normalized wind-direction arrow and label."""
@@ -531,45 +516,7 @@ class AnimationCanvas(QWidget):
                 vy_quadratic,
             )
 
-            if self.velocity_text is not None:
-                self.velocity_text.set_text(
-                    self._format_velocity_text(
-                        vx_no_drag,
-                        vy_no_drag,
-                        vx_linear,
-                        vy_linear,
-                        vx_quadratic,
-                        vy_quadratic,
-                    )
-                )
-
         self.canvas.draw_idle()
-
-    def _format_velocity_text(
-        self,
-        vx_no_drag: float,
-        vy_no_drag: float,
-        vx_linear: float,
-        vy_linear: float,
-        vx_quadratic: float,
-        vy_quadratic: float,
-    ) -> str:
-        """Return formatted projectile and wind velocity components."""
-
-        wind_vx = 0.0
-        wind_vy = 0.0
-
-        if self.parameters is not None:
-            wind_vx = self.parameters.wind_vx
-            wind_vy = self.parameters.wind_vy
-
-        return (
-            "Velocity components\n"
-            f"No drag: vx={vx_no_drag:.2f}, vy={vy_no_drag:.2f} m/s\n"
-            f"Linear:  vx={vx_linear:.2f}, vy={vy_linear:.2f} m/s\n"
-            f"Quad:    vx={vx_quadratic:.2f}, vy={vy_quadratic:.2f} m/s\n"
-            f"Wind:    vx={wind_vx:.2f}, vy={wind_vy:.2f} m/s"
-        )
 
     @staticmethod
     def get_interpolated_position(

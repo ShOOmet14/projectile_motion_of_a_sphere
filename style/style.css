@@ -20,21 +20,21 @@ QLabel[class="h1"] {
 }
 
 QPushButton {
-	min-height: 32px;
+	min-height: 24px;
 	padding: 7px 12px;
 	border-radius: 8px;
 	font-weight: 600;
 }
 
 QPushButton#primaryButton {
-	min-height: 38px;
+	min-height: 24px;
 	font-size: 15px;
 	font-weight: 700;
 }
 
 QPushButton#secondaryButton,
 QPushButton#folderButton {
-	min-height: 34px;
+	min-height: 24px;
 }
 
 QDoubleSpinBox {

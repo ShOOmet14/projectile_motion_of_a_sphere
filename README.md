@@ -1,10 +1,3 @@
-# To do
-
-1. fix plots and gif exports so that elements don't overlap
-2. update readme assets after fixing png and gif exporting
-3. update readme after adding wind
-4. fix code around wind logic
-
 # Projectile Motion Simulator
 
 A desktop application for simulating and comparing projectile motion models with an interactive PySide6 interface.
