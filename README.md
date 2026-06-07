@@ -1,5 +1,12 @@
 # Projectile Motion Simulator
 
+```markdown
+![Tests](https://github.com/ShOOmet14/projectile_motion_of_a_sphere/actions/workflows/tests.yml/badge.svg)
+![Latest release](https://img.shields.io/github/v/release/ShOOmet14/projectile_motion_of_a_sphere)
+![Python](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white)
+![GUI](https://img.shields.io/badge/GUI-PySide6-green?logo=qt&logoColor=white)
+```
+
 A desktop application for simulating and comparing projectile motion models with an interactive PySide6 interface.
 
 This project was created as a learning exercise in Python GUI development, numerical methods, automated testing, and the physics of projectile motion. The application lets the user configure launch conditions and physical parameters, compare three motion models, inspect calculated results, and export simulation data and visualizations.
@@ -8,7 +15,7 @@ This project was created as a learning exercise in Python GUI development, numer
 
 - Simulation of projectile motion with three models: no air resistance, linear drag, and quadratic drag using **Runge-Kutta numerical integration**.
 - Interactive parameter panel with input validation for physically incorrect values.
-- Many configuration options such as: launch conditions, projectile and environment properties, numerial settings.
+- Many configuration options such as: launch conditions, projectile and environment properties, numerical settings.
 - Light and dark themes.
 - Styled GUI using **Qt CSS**.
 - Multiple result tabs: trajectory comparison, mechanical-energy comparison, speed comparison, interactive playback, text summary.
@@ -16,7 +23,7 @@ This project was created as a learning exercise in Python GUI development, numer
 - Export options for: **CSV files**, plots, and GIF animation.
 - Buttons for opening exported plots and animations directories.
 - User settings and app settings are saved to **JSON files**.
-- Automatic unit tests for future developement
+- Automatic unit tests for future development
 
 ## Preview
 
@@ -32,7 +39,7 @@ This project was created as a learning exercise in Python GUI development, numer
 
 ![Exported animation](docs/readme-assets/projectile_motion.gif)
 
-## Physics stuff
+## Physics model
 
 If you are interested in the physics part, take a look at the PDF file inside the `docs/` folder. It contains the equations and explanations of how the simulation works, based on my current understanding of the topic.
 
