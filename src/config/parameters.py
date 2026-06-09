@@ -27,43 +27,43 @@ _FINITE_PARAMETER_NAMES: tuple[str, ...] = (
 class Parameters:
     """Store validated inputs for projectile-motion calculations.
 
-    Angles are provided in degrees by the GUI and converted to radians when
-    needed by trigonometric calculations. Distances are measured in metres,
-    time in seconds, mass in kilograms, and velocities in metres per second.
+    Angles are provided in degrees and converted to radians when needed by
+    trigonometric calculations. Other physical quantities use SI units where
+    applicable. The drag coefficient is dimensionless.
 
     The instance is immutable so that one simulation run always uses a
     consistent set of physical and numerical parameters.
     """
 
-    initial_velocity: float = 50.0
-    initial_angle_degrees: float = 45.0
+    initial_velocity: float = 50.0  # metres / second (m/s)
+    initial_angle_degrees: float = 45.0  # degrees (deg)
 
-    mass: float = 0.145
-    radius: float = 0.0366
+    mass: float = 0.145  # kilograms (kg)
+    radius: float = 0.0366  # metres (m)
 
-    drag_coefficient: float = 0.47
-    air_density: float = 1.225
-    linear_drag: float = 0.02
+    drag_coefficient: float = 0.47  # dimensionless (1)
+    air_density: float = 1.225  # kilograms / metre^3 (kg/m^3)
+    linear_drag: float = 0.02  # kilograms / second (kg/s)
 
-    time_step: float = 0.01
-    time_max: float = 10.0
-    g: float = 9.80665
+    time_step: float = 0.01  # seconds (s)
+    time_max: float = 10.0  # seconds (s)
+    g: float = 9.80665  # metres / second^2 (m/s^2)
 
-    wind_speed: float = 0.0
-    wind_angle_degrees: float = 0.0
+    wind_speed: float = 0.0  # metres / second (m/s)
+    wind_angle_degrees: float = 0.0  # degrees (deg)
 
-    initial_x: float = 0.0
-    initial_y: float = 0.0
+    initial_x: float = 0.0  # metres (m)
+    initial_y: float = 0.0  # metres (m)
 
     @property
     def initial_angle_radians(self) -> float:
-        """Return the launch angle in radians."""
+        """Return the launch angle in radians for calculating velocity components."""
 
         return radians(self.initial_angle_degrees)
 
     @property
     def wind_angle_radians(self) -> float:
-        """Return the wind direction in radians."""
+        """Return the wind direction in radians for calculating wind components."""
 
         return radians(self.wind_angle_degrees)
 
@@ -99,13 +99,13 @@ class Parameters:
 
     @property
     def linear_drag_factor(self) -> float:
-        """Return the linear-drag coefficient divided by projectile mass."""
+        """Return the linear-drag coefficient divided by mass, in inverse seconds."""
 
         return self.linear_drag / self.mass
 
     @property
     def quadratic_drag_factor(self) -> float:
-        """Return the constant factor used by the quadratic-drag equations."""
+        """Return the quadratic-drag factor used by the equations, in inverse metres."""
 
         return self.air_density * self.drag_coefficient * self.area / (2.0 * self.mass)
 
@@ -126,7 +126,11 @@ class Parameters:
                 raise ValueError(f"{name} must be a finite number.")
 
     def _validate_ranges(self) -> None:
-        """Reject parameter values outside the supported physical ranges."""
+        """Reject values outside the ranges enforced by the data model.
+
+        For non-angle parameters, this model enforces lower bounds only.
+        Additional upper bounds are enforced by the GUI.
+        """
 
         if self.initial_y < 0:
             raise ValueError("initial_y must be greater than or equal to zero.")

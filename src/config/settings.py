@@ -1,4 +1,9 @@
-"""Manage theme preferences, stylesheets, and saved simulation parameters."""
+"""Manage theme preferences, stylesheets, and saved simulation parameters.
+
+This module loads and saves JSON configuration files, combines the base
+stylesheet with a theme-specific stylesheet, and converts between persisted
+settings values and validated ``Parameters`` instances.
+"""
 
 import json
 from pathlib import Path
@@ -22,8 +27,9 @@ DARK_STYLE_PATH = _STYLE_DIR / "dark.css"
 
 DEFAULT_THEME: ThemeName = "light"
 
-NumberLike = int | float | str
+_NumberLike = int | float | str
 
+# JSON keys used to persist simulation parameters and load saved overrides.
 _SETTINGS_KEYS: tuple[str, ...] = (
     "v0",
     "angle_deg",
@@ -43,19 +49,55 @@ _SETTINGS_KEYS: tuple[str, ...] = (
 
 
 def is_settings_data(value: object) -> TypeGuard[dict[str, object]]:
+    """Check whether the provided value is a dictionary.
+
+    Args:
+        value: The object to check.
+
+    Returns:
+        True if the value is a dictionary; otherwise, False.
+    """
+
     return isinstance(value, dict)
 
 
 def is_theme_name(value: object) -> TypeGuard[ThemeName]:
+    """Check whether the provided value is a supported theme name.
+
+    Args:
+        value: The object to check.
+
+    Returns:
+        True if the value is either ``"light"`` or ``"dark"``; otherwise,
+        False.
+    """
+
     return value in ("light", "dark")
 
 
-def is_number_like(value: object) -> TypeGuard[NumberLike]:
+def is_number_like(value: object) -> TypeGuard[_NumberLike]:
+    """Check whether the provided value has a supported settings-value type.
+
+    Args:
+        value: The object to check.
+
+    Returns:
+        True if the value is an integer, float, or string, excluding Boolean
+        values; otherwise, False.
+    """
+
+    # bool is a subclass of int, so it must be rejected explicitly.
     return not isinstance(value, bool) and isinstance(value, int | float | str)
 
 
 def load_theme() -> ThemeName:
-    """Return the saved theme, or the default theme if loading fails."""
+    """Load the saved application theme.
+
+    Returns:
+        The saved theme name, or ``DEFAULT_THEME`` if the settings file is
+        missing, cannot be opened, contains malformed JSON, or does not contain
+        a supported theme name.
+    """
 
     if not APP_SETTINGS_PATH.exists():
         return DEFAULT_THEME
@@ -79,7 +121,14 @@ def load_theme() -> ThemeName:
 
 
 def save_theme(theme: ThemeName) -> None:
-    """Save the selected application theme."""
+    """Save the selected application theme.
+
+    Args:
+        theme: The theme name to save.
+
+    Raises:
+        OSError: If the settings directory or file cannot be written.
+    """
 
     APP_SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -93,7 +142,18 @@ def save_theme(theme: ThemeName) -> None:
 
 
 def read_style(path: Path) -> str:
-    """Return a stylesheet file as text, or an empty string if it is missing."""
+    """Read a stylesheet file.
+
+    Args:
+        path: The path to the stylesheet file.
+
+    Returns:
+        The stylesheet content, or an empty string if the file does not exist.
+
+    Raises:
+        OSError: If an existing stylesheet file cannot be read.
+        UnicodeDecodeError: If the file does not contain valid UTF-8 text.
+    """
 
     if not path.exists():
         return ""
@@ -102,7 +162,18 @@ def read_style(path: Path) -> str:
 
 
 def get_stylesheet(theme: ThemeName) -> str:
-    """Combine the base stylesheet with the selected theme stylesheet."""
+    """Build the complete stylesheet for the selected application theme.
+
+    Args:
+        theme: The theme whose stylesheet should be loaded.
+
+    Returns:
+        The base stylesheet followed by the selected theme stylesheet.
+
+    Raises:
+        OSError: If an existing stylesheet file cannot be read.
+        UnicodeDecodeError: If a stylesheet does not contain valid UTF-8 text.
+    """
 
     base_style = read_style(BASE_STYLE_PATH)
 
@@ -115,7 +186,14 @@ def get_stylesheet(theme: ThemeName) -> str:
 
 
 def parameters_to_settings_dict(parameters: Parameters) -> dict[str, float]:
-    """Convert simulation parameters to JSON-compatible settings values."""
+    """Convert simulation parameters to JSON-compatible settings values.
+
+    Args:
+        parameters: The simulation parameters to convert.
+
+    Returns:
+        A dictionary mapping persisted setting names to floating-point values.
+    """
 
     return {
         "v0": float(parameters.initial_velocity),
@@ -136,7 +214,19 @@ def parameters_to_settings_dict(parameters: Parameters) -> dict[str, float]:
 
 
 def settings_dict_to_parameters(settings: dict[str, float]) -> Parameters:
-    """Create validated simulation parameters from stored settings values."""
+    """Create validated simulation parameters from a settings dictionary.
+
+    Args:
+        settings: A dictionary containing all required simulation settings.
+
+    Returns:
+        A validated ``Parameters`` instance.
+
+    Raises:
+        KeyError: If a required setting is missing.
+        TypeError: If a setting has an incompatible type.
+        ValueError: If a setting value is outside its supported range.
+    """
 
     return Parameters(
         initial_velocity=settings["v0"],
@@ -157,7 +247,17 @@ def settings_dict_to_parameters(settings: dict[str, float]) -> Parameters:
 
 
 def load_user_settings() -> Parameters:
-    """Load saved simulation parameters, falling back to defaults on failure."""
+    """Load saved simulation parameters and apply valid overrides to defaults.
+
+    Saved integer, float, and string values override the corresponding default
+    values. Missing keys and values with unsupported types retain their default
+    values. If file access, JSON parsing, numeric conversion, or parameter
+    validation fails, the complete default configuration is returned.
+
+    Returns:
+        The loaded and validated simulation parameters, or
+        ``DEFAULT_PARAMETERS`` if loading fails.
+    """
 
     if not USER_SETTINGS_PATH.exists():
         return DEFAULT_PARAMETERS
@@ -169,6 +269,7 @@ def load_user_settings() -> Parameters:
         if not is_settings_data(loaded_json):
             return DEFAULT_PARAMETERS
 
+        # Start with defaults so that missing saved values need no special case.
         settings = parameters_to_settings_dict(DEFAULT_PARAMETERS)
 
         for key in _SETTINGS_KEYS:
@@ -184,7 +285,14 @@ def load_user_settings() -> Parameters:
 
 
 def save_user_settings(parameters: Parameters) -> None:
-    """Save simulation parameters as JSON."""
+    """Save simulation parameters as JSON.
+
+    Args:
+        parameters: The simulation parameters to save.
+
+    Raises:
+        OSError: If the settings directory or file cannot be written.
+    """
 
     USER_SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
